@@ -6,61 +6,80 @@
 const SUPABASE_URL = "https://gyjonweumwmlvfvcksjk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VbxuB8dM6XPJgK8xR3N2dA_S3b60VCk";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
-// ===============================
-// ÉLÉMENTS
-// ===============================
+/* =========================
+   ELEMENTS
+   ========================= */
 
-const authScreen = document.getElementById("authScreen");
-const chatApp = document.getElementById("chatApp");
+const authScreen =
+    document.getElementById("authScreen");
 
-const authForm = document.getElementById("authForm");
-const usernameInput = document.getElementById("usernameInput");
-const passwordInput = document.getElementById("passwordInput");
+const chatApp =
+    document.getElementById("chatApp");
 
-const authButton = document.getElementById("authButton");
-const authTitle = document.getElementById("authTitle");
-const authMessage = document.getElementById("authMessage");
+const authForm =
+    document.getElementById("authForm");
 
-const switchAuth = document.getElementById("switchAuth");
-const switchText = document.getElementById("switchText");
+const usernameInput =
+    document.getElementById("usernameInput");
 
-const usernameDisplay = document.getElementById("usernameDisplay");
-const userAvatar = document.getElementById("userAvatar");
+const passwordInput =
+    document.getElementById("passwordInput");
 
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const messages = document.getElementById("messages");
+const authButton =
+    document.getElementById("authButton");
+
+const authMessage =
+    document.getElementById("authMessage");
+
+const switchAuth =
+    document.getElementById("switchAuth");
+
+const switchText =
+    document.getElementById("switchText");
+
+const authTitle =
+    document.getElementById("authTitle");
+
+const usernameDisplay =
+    document.getElementById("usernameDisplay");
+
+const userAvatar =
+    document.getElementById("userAvatar");
+
+const messageForm =
+    document.getElementById("messageForm");
+
+const messageInput =
+    document.getElementById("messageInput");
+
+const messagesContainer =
+    document.getElementById("messages");
 
 
-// ===============================
-// MODE
-// ===============================
-
-let signupMode = false;
+let isSignup = false;
 
 
-// ===============================
-// CHANGER CONNEXION / INSCRIPTION
-// ===============================
+/* =========================
+   CHANGER LOGIN / INSCRIPTION
+   ========================= */
 
 switchAuth.addEventListener("click", () => {
 
-    signupMode = !signupMode;
+    isSignup = !isSignup;
 
     authMessage.textContent = "";
 
-    passwordInput.value = "";
-
-    if (signupMode) {
+    if (isSignup) {
 
         authTitle.textContent =
-            "Crée ton compte";
+            "Crée ton compte MonChat";
 
         authButton.textContent =
             "Créer mon compte";
@@ -88,40 +107,45 @@ switchAuth.addEventListener("click", () => {
 });
 
 
-// ===============================
-// CONNEXION / INSCRIPTION
-// ===============================
+/* =========================
+   AUTH
+   ========================= */
 
 authForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
     const username =
-        usernameInput.value.trim().toLowerCase();
+        usernameInput.value.trim();
 
     const password =
         passwordInput.value;
 
-    if (username.length < 3) {
+    authMessage.textContent = "";
 
-        authMessage.textContent =
-            "❌ Le pseudo doit avoir au moins 3 caractères.";
-
-        return;
-    }
 
     if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
 
         authMessage.textContent =
-            "❌ Utilise seulement lettres, chiffres, . _ ou -";
+            "Le pseudo contient des caractères invalides.";
 
         return;
     }
 
+
+    if (username.length < 3 || username.length > 20) {
+
+        authMessage.textContent =
+            "Le pseudo doit contenir entre 3 et 20 caractères.";
+
+        return;
+    }
+
+
     if (password.length < 6) {
 
         authMessage.textContent =
-            "❌ Le mot de passe doit avoir au moins 6 caractères.";
+            "Le mot de passe doit contenir au moins 6 caractères.";
 
         return;
     }
@@ -130,155 +154,103 @@ authForm.addEventListener("submit", async (event) => {
     authButton.disabled = true;
 
     authButton.textContent =
-        signupMode
+        isSignup
             ? "Création..."
             : "Connexion...";
 
 
     const email =
-        username + "@monchat.local";
+        `${username}@monchat.local`;
 
 
-    // ===============================
-    // INSCRIPTION
-    // ===============================
+    try {
 
-    if (signupMode) {
+        if (isSignup) {
 
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signUp({
-
-            email: email,
-
-            password: password
-
-        });
+            const { data, error } =
+                await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password
+                });
 
 
-        if (error) {
+            if (error) {
+                throw error;
+            }
 
-            authMessage.textContent =
-                "❌ " + error.message;
 
-            resetButton();
+            if (!data.user) {
+                throw new Error(
+                    "Impossible de créer le compte."
+                );
+            }
 
-            return;
+
+            const { error: profileError } =
+                await supabaseClient
+                    .from("profiles")
+                    .insert({
+                        id: data.user.id,
+                        username: username
+                    });
+
+
+            if (profileError) {
+
+                console.error(profileError);
+
+                authMessage.textContent =
+                    "Compte créé, mais impossible de créer le profil.";
+
+                return;
+            }
+
+
+            await showChat();
+
+        } else {
+
+            const { error } =
+                await supabaseClient.auth
+                    .signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            await showChat();
         }
 
+    } catch (error) {
 
-        if (!data.user) {
-
-            authMessage.textContent =
-                "❌ Impossible de créer le compte.";
-
-            resetButton();
-
-            return;
-        }
-
-
-        // Créer le profil
-
-        const {
-            error: profileError
-        } = await supabaseClient
-            .from("profiles")
-            .insert({
-
-                id: data.user.id,
-
-                username: username
-
-            });
-
-
-        if (profileError) {
-
-            console.error(profileError);
-
-            authMessage.textContent =
-                "❌ Compte créé mais profil impossible à créer.";
-
-            resetButton();
-
-            return;
-        }
-
+        console.error(error);
 
         authMessage.textContent =
-            "✅ Compte créé !";
+            error.message ||
+            "Une erreur est survenue.";
 
+    } finally {
 
-        await showChat();
+        authButton.disabled = false;
 
-        return;
+        authButton.textContent =
+            isSignup
+                ? "Créer mon compte"
+                : "Se connecter";
     }
-
-
-    // ===============================
-    // CONNEXION
-    // ===============================
-
-    const {
-        data,
-        error
-    } = await supabaseClient.auth.signInWithPassword({
-
-        email: email,
-
-        password: password
-
-    });
-
-
-    if (error) {
-
-        authMessage.textContent =
-            "❌ Pseudo ou mot de passe incorrect.";
-
-        resetButton();
-
-        return;
-    }
-
-
-    if (data.user) {
-
-        await showChat();
-    }
-
 });
 
 
-// ===============================
-// BOUTON
-// ===============================
-
-function resetButton() {
-
-    authButton.disabled = false;
-
-    authButton.textContent =
-        signupMode
-            ? "Créer mon compte"
-            : "Se connecter";
-}
-
-
-// ===============================
-// AFFICHER LE CHAT
-// ===============================
+/* =========================
+   AFFICHER LE CHAT
+   ========================= */
 
 async function showChat() {
-
-    authScreen.style.display =
-        "none";
-
-    chatApp.style.display =
-        "flex";
-
 
     const {
         data: {
@@ -293,7 +265,8 @@ async function showChat() {
 
 
     const {
-        data: profile
+        data: profile,
+        error
     } = await supabaseClient
         .from("profiles")
         .select("username")
@@ -301,31 +274,37 @@ async function showChat() {
         .single();
 
 
-    let username =
-        profile?.username;
+    if (error) {
 
+        console.error(error);
 
-    if (!username) {
-
-        username =
-            user.email.split("@")[0];
+        return;
     }
 
 
     usernameDisplay.textContent =
-        username;
+        profile.username;
 
     userAvatar.textContent =
-        username.charAt(0).toUpperCase();
+        profile.username
+            .charAt(0)
+            .toUpperCase();
+
+
+    authScreen.style.display =
+        "none";
+
+    chatApp.style.display =
+        "flex";
 
 
     await loadMessages();
 }
 
 
-// ===============================
-// SESSION
-// ===============================
+/* =========================
+   SESSION
+   ========================= */
 
 async function checkSession() {
 
@@ -337,16 +316,7 @@ async function checkSession() {
 
 
     if (session) {
-
         await showChat();
-
-    } else {
-
-        authScreen.style.display =
-            "flex";
-
-        chatApp.style.display =
-            "none";
     }
 }
 
@@ -354,9 +324,9 @@ async function checkSession() {
 checkSession();
 
 
-// ===============================
-// CHARGER MESSAGES
-// ===============================
+/* =========================
+   CHARGER LES MESSAGES
+   ========================= */
 
 async function loadMessages() {
 
@@ -373,26 +343,48 @@ async function loadMessages() {
 
     if (error) {
 
-        console.error(
-            "Erreur messages :",
-            error
-        );
+        console.error(error);
 
         return;
     }
 
 
-    messages.innerHTML = "";
+    messagesContainer.innerHTML = "";
 
-    data.forEach(displayMessage);
+
+    for (const message of data) {
+
+        await displayMessage(message);
+    }
+
+
+    scrollMessages();
 }
 
 
-// ===============================
-// AFFICHER MESSAGE
-// ===============================
+/* =========================
+   AFFICHER UN MESSAGE
+   ========================= */
 
 async function displayMessage(message) {
+
+    const {
+        data: profile
+    } = await supabaseClient
+        .from("profiles")
+        .select("username")
+        .eq("id", message.username)
+        .maybeSingle();
+
+
+    let username =
+        message.username;
+
+
+    if (profile) {
+        username = profile.username;
+    }
+
 
     const {
         data: {
@@ -401,279 +393,372 @@ async function displayMessage(message) {
     } = await supabaseClient.auth.getUser();
 
 
-    let currentUsername = "";
-
-
-    if (user) {
-
-        const {
-            data: profile
-        } = await supabaseClient
-            .from("profiles")
-            .select("username")
-            .eq("id", user.id)
-            .single();
-
-
-        currentUsername =
-            profile?.username || "";
-    }
-
-
     const div =
         document.createElement("div");
 
 
-    const isMe =
-        message.username === currentUsername;
-
-
     div.className =
-        isMe
-            ? "message me"
-            : "message other";
+        "message";
 
 
-    const date =
-        new Date(message.created_at);
+    if (
+        user &&
+        message.username === user.id
+    ) {
+        div.classList.add("me");
+    }
 
 
-    const time =
-        date.toLocaleTimeString(
-            "fr-FR",
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
+    const bubble =
+        document.createElement("div");
 
 
-    div.innerHTML = `
-
-        <div>
-
-            ${
-                !isMe
-                    ? `
-                        <div class="message-name">
-                            ${escapeHTML(message.username)}
-                        </div>
-                    `
-                    : ""
-            }
-
-            <div class="bubble">
-                ${escapeHTML(message.content)}
-            </div>
-
-            <small class="time">
-                ${time}
-            </small>
-
-        </div>
-
-    `;
+    bubble.className =
+        "message-bubble";
 
 
-    messages.appendChild(div);
+    bubble.innerHTML =
+        `<strong>${escapeHTML(username)}</strong><br>${escapeHTML(message.content)}`;
 
-    messages.scrollTop =
-        messages.scrollHeight;
+
+    div.appendChild(bubble);
+
+    messagesContainer.appendChild(div);
 }
 
 
-// ===============================
-// ENVOYER MESSAGE
-// ===============================
+/* =========================
+   ENVOYER MESSAGE
+   ========================= */
 
-messageForm.addEventListener(
-    "submit",
-    async (event) => {
+messageForm.addEventListener("submit", async (event) => {
 
-        event.preventDefault();
+    event.preventDefault();
 
 
-        const text =
-            messageInput.value.trim();
+    const content =
+        messageInput.value.trim();
 
 
-        if (!text) {
-            return;
-        }
-
-
-        const {
-            data: {
-                user
-            }
-        } = await supabaseClient.auth.getUser();
-
-
-        if (!user) {
-
-            alert(
-                "Tu dois être connecté."
-            );
-
-            return;
-        }
-
-
-        const {
-            data: profile
-        } = await supabaseClient
-            .from("profiles")
-            .select("username")
-            .eq("id", user.id)
-            .single();
-
-
-        const username =
-            profile?.username;
-
-
-        if (!username) {
-
-            alert(
-                "Profil introuvable."
-            );
-
-            return;
-        }
-
-
-        const {
-            error
-        } = await supabaseClient
-            .from("messages")
-            .insert({
-
-                username: username,
-
-                content: text
-
-            });
-
-
-        if (error) {
-
-            console.error(
-                "Erreur envoi :",
-                error
-            );
-
-            alert(
-                "Impossible d'envoyer le message."
-            );
-
-            return;
-        }
-
-
-        messageInput.value = "";
+    if (!content) {
+        return;
     }
-);
 
 
-// ===============================
-// TEMPS RÉEL
-// ===============================
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient.auth.getUser();
+
+
+    if (!user) {
+        return;
+    }
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("messages")
+        .insert({
+            username: user.id,
+            content: content
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    messageInput.value = "";
+});
+
+
+/* =========================
+   REALTIME
+   ========================= */
 
 supabaseClient
-    .channel("messages-realtime")
+    .channel("messages-channel")
     .on(
         "postgres_changes",
         {
             event: "INSERT",
-
             schema: "public",
-
             table: "messages"
         },
+        async (payload) => {
 
-        (payload) => {
-
-            displayMessage(
+            await displayMessage(
                 payload.new
             );
+
+            scrollMessages();
         }
     )
     .subscribe();
 
 
-// ===============================
-// PROTECTION HTML
-// ===============================
+/* =========================
+   SCROLL
+   ========================= */
+
+function scrollMessages() {
+
+    messagesContainer.scrollTop =
+        messagesContainer.scrollHeight;
+}
+
+
+/* =========================
+   SECURITE HTML
+   ========================= */
 
 function escapeHTML(text) {
 
     const div =
         document.createElement("div");
 
-    div.textContent =
-        text;
+    div.textContent = text;
 
     return div.innerHTML;
 }
+
 
 /* =========================
    PARTICULES ANIMÉES
    ========================= */
 
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("particles");
 
-let particles = [];
-const particleCount = 90;
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
+if (canvas) {
 
-function createParticles() {
-    particles = [];
+    const ctx =
+        canvas.getContext("2d");
 
-    for (let i = 0; i < particleCount; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 2 + 0.5,
-            speedX: (Math.random() - 0.5) * 0.5,
-            speedY: (Math.random() - 0.5) * 0.5
-        });
-    }
-}
 
-function drawParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let particles = [];
 
-    for (const p of particles) {
-        p.x += p.speedX;
-        p.y += p.speedY;
 
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
+    function resizeParticles() {
 
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
+        const rect =
+            canvas.parentElement.getBoundingClientRect();
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
 
-        ctx.fillStyle = "rgba(255,255,255,0.7)";
-        ctx.fill();
+        canvas.width =
+            rect.width * window.devicePixelRatio;
+
+        canvas.height =
+            rect.height * window.devicePixelRatio;
+
+
+        canvas.style.width =
+            rect.width + "px";
+
+        canvas.style.height =
+            rect.height + "px";
+
+
+        ctx.setTransform(
+            window.devicePixelRatio,
+            0,
+            0,
+            window.devicePixelRatio,
+            0,
+            0
+        );
     }
 
-    requestAnimationFrame(drawParticles);
-}
 
-resizeCanvas();
-createParticles();
-drawParticles();
+    function createParticles() {
 
-window.addEventListener("resize", () => {
-    resizeCanvas();
+        const width =
+            canvas.parentElement.clientWidth;
+
+        const height =
+            canvas.parentElement.clientHeight;
+
+
+        const count =
+            Math.min(
+                100,
+                Math.max(
+                    45,
+                    Math.floor(width / 15)
+                )
+            );
+
+
+        particles = [];
+
+
+        for (let i = 0; i < count; i++) {
+
+            particles.push({
+
+                x: Math.random() * width,
+
+                y: Math.random() * height,
+
+                size:
+                    Math.random() * 1.7 + 0.6,
+
+                speedX:
+                    (Math.random() - 0.5) * 0.35,
+
+                speedY:
+                    (Math.random() - 0.5) * 0.35
+            });
+        }
+    }
+
+
+    function animateParticles() {
+
+        const width =
+            canvas.parentElement.clientWidth;
+
+        const height =
+            canvas.parentElement.clientHeight;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        /* Points */
+
+        for (const p of particles) {
+
+            p.x += p.speedX;
+            p.y += p.speedY;
+
+
+            if (p.x < 0)
+                p.x = width;
+
+            if (p.x > width)
+                p.x = 0;
+
+
+            if (p.y < 0)
+                p.y = height;
+
+            if (p.y > height)
+                p.y = 0;
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                p.x,
+                p.y,
+                p.size,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                "rgba(150, 170, 255, 0.75)";
+
+            ctx.fill();
+        }
+
+
+        /* Lignes entre les points */
+
+        for (let i = 0; i < particles.length; i++) {
+
+            for (
+                let j = i + 1;
+                j < particles.length;
+                j++
+            ) {
+
+                const p1 =
+                    particles[i];
+
+                const p2 =
+                    particles[j];
+
+
+                const dx =
+                    p1.x - p2.x;
+
+                const dy =
+                    p1.y - p2.y;
+
+
+                const distance =
+                    Math.sqrt(
+                        dx * dx +
+                        dy * dy
+                    );
+
+
+                if (distance < 120) {
+
+                    const opacity =
+                        (1 - distance / 120) * 0.18;
+
+
+                    ctx.beginPath();
+
+                    ctx.moveTo(
+                        p1.x,
+                        p1.y
+                    );
+
+                    ctx.lineTo(
+                        p2.x,
+                        p2.y
+                    );
+
+
+                    ctx.strokeStyle =
+                        `rgba(120, 140, 255, ${opacity})`;
+
+                    ctx.lineWidth = 1;
+
+                    ctx.stroke();
+                }
+            }
+        }
+
+
+        requestAnimationFrame(
+            animateParticles
+        );
+    }
+
+
+    resizeParticles();
+
     createParticles();
-});
 
+    animateParticles();
+
+
+    window.addEventListener(
+        "resize",
+        () => {
+
+            resizeParticles();
+
+            createParticles();
+        }
+    );
+}

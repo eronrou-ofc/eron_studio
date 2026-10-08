@@ -1,27 +1,23 @@
-
-/* ===============================
-   RESET
-================================ */
-
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    font-family: Inter, Arial, sans-serif;
-    background: #0b0d12;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #080a0f;
     color: white;
     overflow: hidden;
 }
 
 
-/* ===============================
+/* =========================
    PAGE CONNEXION
-================================ */
+   ========================= */
 
 .auth-screen {
+    position: relative;
     width: 100vw;
     height: 100vh;
 
@@ -29,200 +25,152 @@ body {
     align-items: center;
     justify-content: center;
 
+    overflow: hidden;
+
     background:
         radial-gradient(
             circle at 20% 20%,
-            #202b45 0%,
+            rgba(50, 80, 255, 0.15),
             transparent 35%
         ),
         radial-gradient(
             circle at 80% 80%,
-            #171d32 0%,
-            transparent 40%
+            rgba(130, 50, 255, 0.12),
+            transparent 35%
         ),
         #080a0f;
 }
 
 
-/* petites lumières */
+/* Canvas des particules */
 
-.auth-screen::before,
-.auth-screen::after {
-    content: "";
-
+#particles {
     position: absolute;
 
-    width: 350px;
-    height: 350px;
+    top: 0;
+    left: 0;
 
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
 
-    filter: blur(100px);
-
-    opacity: 0.25;
+    z-index: 0;
 
     pointer-events: none;
 }
 
-.auth-screen::before {
-    background: #4f7cff;
-    top: -100px;
-    left: -100px;
-}
 
-.auth-screen::after {
-    background: #8b5cf6;
-    bottom: -120px;
-    right: -100px;
-}
-
-
-/* ===============================
-   CARTE
-================================ */
+/* =========================
+   CARTE CONNEXION
+   ========================= */
 
 .auth-card {
-
     position: relative;
 
-    width: 420px;
+    z-index: 5;
 
-    padding: 45px 40px;
+    width: 400px;
+
+    padding: 42px 38px;
 
     border-radius: 24px;
 
-    background: rgba(20, 23, 32, 0.82);
+    background: rgba(15, 18, 27, 0.88);
 
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.6),
+        0 0 40px rgba(70, 90, 255, 0.08);
 
     backdrop-filter: blur(20px);
 
-    box-shadow:
-        0 30px 80px rgba(0,0,0,0.55);
-
     text-align: center;
-
-    animation: cardAppear 0.5s ease;
 }
 
-
-@keyframes cardAppear {
-
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.97);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
-
-
-/* ===============================
-   LOGO
-================================ */
 
 .auth-logo {
-
     width: 70px;
     height: 70px;
 
-    margin: 0 auto 18px;
+    margin: 0 auto 20px;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
-    font-size: 32px;
-
     border-radius: 20px;
 
-    background: linear-gradient(
-        135deg,
-        #4f7cff,
-        #8b5cf6
-    );
+    font-size: 34px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4263ff,
+            #8d4dff
+        );
 
     box-shadow:
-        0 10px 35px rgba(79,124,255,0.35);
+        0 10px 35px rgba(70, 80, 255, 0.35);
 }
 
 
 .auth-card h1 {
-
     font-size: 32px;
-
-    letter-spacing: -1px;
-
     margin-bottom: 8px;
 }
 
 
 .auth-subtitle {
-
-    color: #9298a7;
-
-    font-size: 15px;
-
-    margin-bottom: 30px;
+    color: #8e95a7;
+    font-size: 14px;
+    margin-bottom: 28px;
 }
 
 
-/* ===============================
+/* =========================
    INPUTS
-================================ */
+   ========================= */
 
 .input-box {
-
-    height: 55px;
-
     display: flex;
-
     align-items: center;
 
-    gap: 12px;
+    width: 100%;
+
+    height: 54px;
+
+    margin-bottom: 14px;
 
     padding: 0 16px;
 
-    margin-bottom: 15px;
-
-    background: #11141c;
-
-    border: 1px solid #252a36;
-
     border-radius: 14px;
+
+    background: #11141d;
+
+    border: 1px solid #242936;
 
     transition: 0.2s;
 }
 
 
 .input-box:focus-within {
-
-    border-color: #5b7cff;
+    border-color: #6170ff;
 
     box-shadow:
-        0 0 0 3px rgba(91,124,255,0.12);
+        0 0 0 3px rgba(80, 90, 255, 0.1);
 }
 
 
 .input-box span {
-
+    margin-right: 12px;
     font-size: 18px;
-
-    opacity: 0.8;
 }
 
 
 .input-box input {
-
-    width: 100%;
+    flex: 1;
 
     border: none;
-
     outline: none;
 
     background: transparent;
@@ -234,184 +182,167 @@ body {
 
 
 .input-box input::placeholder {
-
-    color: #676d7c;
+    color: #686f80;
 }
 
 
-/* ===============================
-   BOUTON
-================================ */
+/* =========================
+   BOUTON CONNEXION
+   ========================= */
 
 .auth-button {
-
     width: 100%;
-
-    height: 55px;
+    height: 54px;
 
     margin-top: 8px;
 
     border: none;
-
     border-radius: 14px;
 
-    background: linear-gradient(
-        135deg,
-        #4f7cff,
-        #7255e8
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #4263ff,
+            #814dff
+        );
 
     color: white;
 
     font-size: 15px;
-
-    font-weight: 600;
+    font-weight: bold;
 
     cursor: pointer;
 
     transition: 0.2s;
-
-    box-shadow:
-        0 10px 25px rgba(79,124,255,0.25);
 }
 
 
 .auth-button:hover {
-
     transform: translateY(-2px);
 
     box-shadow:
-        0 14px 30px rgba(79,124,255,0.35);
+        0 10px 30px rgba(70, 80, 255, 0.3);
 }
 
 
 .auth-button:active {
-
     transform: translateY(0);
 }
 
 
-/* ===============================
-   MESSAGE
-================================ */
+/* =========================
+   MESSAGES AUTH
+   ========================= */
 
 .auth-message {
+    min-height: 20px;
 
-    min-height: 22px;
-
-    margin-top: 15px;
+    margin-top: 16px;
 
     font-size: 13px;
 
-    color: #ff7777;
+    color: #ff6b6b;
 }
 
 
-/* ===============================
-   SWITCH
-================================ */
+/* =========================
+   CHANGEMENT LOGIN / INSCRIPTION
+   ========================= */
 
 .auth-switch {
+    margin-top: 20px;
 
-    margin-top: 22px;
+    color: #858c9d;
 
-    color: #777d8d;
-
-    font-size: 14px;
+    font-size: 13px;
 }
 
 
 .auth-switch button {
-
     border: none;
+    background: none;
 
-    background: transparent;
-
-    color: #6d8cff;
-
-    font-weight: 600;
+    color: #7180ff;
 
     cursor: pointer;
+
+    font-weight: bold;
 
     margin-left: 5px;
 }
 
 
 .auth-switch button:hover {
-
     text-decoration: underline;
 }
 
 
-/* ===============================
-   APPLICATION CHAT
-================================ */
+/* =========================
+   APPLICATION
+   ========================= */
 
 .app {
-
     width: 100vw;
     height: 100vh;
 
     display: flex;
 
-    background: #0b0d12;
+    background: #090b10;
 }
 
 
-/* ===============================
+/* =========================
    SIDEBAR
-================================ */
+   ========================= */
 
 .sidebar {
-
     width: 280px;
 
-    background: #11141b;
-
-    border-right: 1px solid #222631;
+    height: 100vh;
 
     padding: 25px 18px;
+
+    background: #0d1017;
+
+    border-right: 1px solid #1d212b;
 }
 
 
 .logo {
-
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 12px;
 
-    font-size: 20px;
+    font-size: 21px;
 
-    font-weight: 700;
+    font-weight: bold;
 
     margin-bottom: 35px;
 }
 
 
 .logo-icon {
-
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
-    border-radius: 12px;
+    border-radius: 13px;
 
-    background: linear-gradient(
-        135deg,
-        #4f7cff,
-        #7255e8
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #4263ff,
+            #814dff
+        );
 }
 
 
 .profile {
-
     display: flex;
 
     align-items: center;
@@ -422,14 +353,13 @@ body {
 
     border-radius: 14px;
 
-    background: #181b24;
+    background: #121620;
 
     margin-bottom: 20px;
 }
 
 
 .profile strong {
-
     display: block;
 
     font-size: 14px;
@@ -437,91 +367,121 @@ body {
 
 
 .profile small {
-
     display: block;
 
-    color: #737989;
-
     margin-top: 4px;
+
+    color: #777f91;
+
+    font-size: 11px;
 }
 
 
-.avatar {
+/* =========================
+   AVATAR
+   ========================= */
 
+.avatar {
     width: 40px;
     height: 40px;
 
-    display: flex;
+    flex-shrink: 0;
 
+    display: flex;
     align-items: center;
     justify-content: center;
 
     border-radius: 50%;
 
-    background: #4f7cff;
+    background:
+        linear-gradient(
+            135deg,
+            #596cff,
+            #865cff
+        );
 
-    font-weight: 600;
+    font-weight: bold;
 }
 
 
 .avatar.blue {
-
-    background: #2563eb;
+    background:
+        linear-gradient(
+            135deg,
+            #277cff,
+            #36b9ff
+        );
 }
 
 
-.new-chat {
+/* =========================
+   NOUVEAU CHAT
+   ========================= */
 
+.new-chat {
     width: 100%;
 
-    padding: 12px;
+    height: 44px;
 
     border: none;
 
     border-radius: 12px;
 
-    background: #1d2230;
+    background: #171b25;
 
     color: white;
 
     cursor: pointer;
 
-    margin-bottom: 30px;
+    margin-bottom: 28px;
+
+    transition: 0.2s;
 }
 
 
-.section-title {
+.new-chat:hover {
+    background: #202532;
+}
 
-    color: #656b7b;
+
+/* =========================
+   DISCUSSIONS
+   ========================= */
+
+.section-title {
+    color: #606879;
 
     font-size: 11px;
 
+    font-weight: bold;
+
     letter-spacing: 1px;
 
-    margin-bottom: 10px;
+    margin: 0 10px 12px;
 }
 
 
 .chat {
-
     display: flex;
 
-    gap: 10px;
+    align-items: center;
+
+    gap: 12px;
 
     padding: 10px;
 
-    border-radius: 12px;
+    border-radius: 13px;
+
+    cursor: pointer;
 }
 
 
 .chat.selected {
-
-    background: #1b2130;
+    background: #171b27;
 }
 
 
 .chat-info strong {
-
     display: block;
 
     font-size: 13px;
@@ -529,30 +489,39 @@ body {
 
 
 .chat-info small {
+    display: block;
 
-    color: #6e7483;
+    margin-top: 4px;
+
+    color: #6e7687;
 
     font-size: 11px;
 }
 
 
-/* ===============================
-   CHAT
-================================ */
+/* =========================
+   ZONE CHAT
+   ========================= */
 
 .chat-area {
-
     flex: 1;
 
     display: flex;
 
     flex-direction: column;
+
+    min-width: 0;
 }
 
 
-.chat-header {
+/* =========================
+   HEADER
+   ========================= */
 
-    height: 75px;
+.chat-header {
+    height: 80px;
+
+    padding: 0 28px;
 
     display: flex;
 
@@ -560,46 +529,46 @@ body {
 
     justify-content: space-between;
 
-    padding: 0 25px;
+    border-bottom: 1px solid #1c2029;
 
-    border-bottom: 1px solid #222631;
+    background: #0d1017;
 }
 
 
 .chat-header h2 {
-
     font-size: 17px;
 }
 
 
 .chat-header span {
+    display: block;
 
-    color: #61d28b;
+    margin-top: 5px;
 
-    font-size: 12px;
+    color: #54d68a;
+
+    font-size: 11px;
 }
 
 
 .menu-button {
-
-    background: none;
-
     border: none;
 
-    color: white;
+    background: transparent;
 
-    font-size: 24px;
+    color: #8b92a3;
+
+    font-size: 25px;
 
     cursor: pointer;
 }
 
 
-/* ===============================
+/* =========================
    MESSAGES
-================================ */
+   ========================= */
 
 .messages {
-
     flex: 1;
 
     overflow-y: auto;
@@ -609,28 +578,27 @@ body {
 
 
 .message {
-
     display: flex;
 
-    margin-bottom: 14px;
+    margin-bottom: 15px;
 }
 
 
 .message.me {
-
     justify-content: flex-end;
 }
 
 
-.bubble {
-
-    max-width: 500px;
+.message-bubble {
+    max-width: 65%;
 
     padding: 11px 15px;
 
     border-radius: 15px;
 
-    background: #1a1e28;
+    background: #171b25;
+
+    color: #e9ebef;
 
     font-size: 14px;
 
@@ -638,41 +606,24 @@ body {
 }
 
 
-.message.me .bubble {
-
-    background: #4f6ff0;
+.message.me .message-bubble {
+    background:
+        linear-gradient(
+            135deg,
+            #4263ff,
+            #744cff
+        );
 }
 
 
-.message-name {
-
-    color: #8c93a4;
-
-    font-size: 11px;
-
-    margin-bottom: 4px;
-}
-
-
-.time {
-
-    color: #666c7a;
-
-    font-size: 10px;
-
-    margin-top: 4px;
-
-    display: block;
-}
-
-
-/* ===============================
-   INPUT
-================================ */
+/* =========================
+   ZONE ENVOI
+   ========================= */
 
 .input-area {
+    min-height: 78px;
 
-    height: 75px;
+    padding: 15px 22px;
 
     display: flex;
 
@@ -680,120 +631,110 @@ body {
 
     gap: 10px;
 
-    padding: 15px 20px;
+    border-top: 1px solid #1c2029;
 
-    border-top: 1px solid #222631;
+    background: #0d1017;
 }
 
 
 .input-area input {
-
     flex: 1;
 
-    height: 45px;
+    height: 48px;
 
-    border: 1px solid #292e3a;
+    padding: 0 16px;
 
-    border-radius: 13px;
+    border: 1px solid #252a35;
 
-    background: #151820;
-
-    color: white;
+    border-radius: 14px;
 
     outline: none;
 
-    padding: 0 15px;
+    background: #141820;
+
+    color: white;
+
+    font-size: 14px;
+}
+
+
+.input-area input:focus {
+    border-color: #5364ff;
 }
 
 
 .attach,
 .emoji,
 .send {
-
     width: 45px;
     height: 45px;
 
     border: none;
 
-    border-radius: 12px;
+    border-radius: 13px;
 
     cursor: pointer;
 
     color: white;
-}
 
-
-.attach,
-.emoji {
-
-    background: #191d26;
-}
-
-
-.send {
-
-    background: #4f7cff;
+    background: #171b25;
 
     font-size: 18px;
 }
 
 
-/* ===============================
+.send {
+    background:
+        linear-gradient(
+            135deg,
+            #4263ff,
+            #814dff
+        );
+}
+
+
+/* =========================
+   SCROLLBAR
+   ========================= */
+
+.messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+
+.messages::-webkit-scrollbar-thumb {
+    background: #292f3b;
+
+    border-radius: 10px;
+}
+
+
+/* =========================
    MOBILE
-================================ */
+   ========================= */
 
 @media (max-width: 700px) {
 
-    .auth-card {
+    .sidebar {
+        display: none;
+    }
 
+    .auth-card {
         width: calc(100% - 30px);
 
         padding: 35px 25px;
     }
 
-
-    .sidebar {
-
-        display: none;
+    .messages {
+        padding: 15px;
     }
 
-}
+    .message-bubble {
+        max-width: 80%;
+    }
 
-/* =========================
-   FOND ANIMÉ — PETITS POINTS
-   ========================= */
+    .input-area {
+        padding: 12px;
+    }
 
-#particles {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-    background: #05070b;
-}
-
-/* On garde le contenu au-dessus */
-.auth-screen,
-.app {
-    position: relative;
-    z-index: 1;
-}
-.auth-screen {
-    position: relative;
-    overflow: hidden;
-}
-
-#particles {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.auth-card {
-    position: relative;
-    z-index: 2;
 }

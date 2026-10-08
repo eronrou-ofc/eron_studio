@@ -1,35 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>MonChat</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <canvas id="particles"></canvas>
-    <!-- ========================= -->
-    <!-- CONNEXION -->
-    <!-- ========================= -->
+
+    <!-- =========================
+         PAGE DE CONNEXION
+         ========================= -->
 
     <div id="authScreen" class="auth-screen">
 
-
-        <div id="authScreen" class="auth-screen">
-
-    <canvas id="particles"></canvas>
-
-    <div class="auth-card">
-        <!-- tout ton contenu de connexion ici -->
-    </div>
-
-</div>
         <canvas id="particles"></canvas>
+
         <div class="auth-card">
 
             <div class="auth-logo">
@@ -45,7 +32,6 @@
             <form id="authForm">
 
                 <div class="input-box">
-
                     <span>👤</span>
 
                     <input
@@ -57,12 +43,9 @@
                         minlength="3"
                         maxlength="20"
                     >
-
                 </div>
 
-
                 <div class="input-box">
-
                     <span>🔒</span>
 
                     <input
@@ -73,9 +56,7 @@
                         required
                         minlength="6"
                     >
-
                 </div>
-
 
                 <button
                     type="submit"
@@ -87,15 +68,9 @@
 
             </form>
 
-
-            <p
-                id="authMessage"
-                class="auth-message"
-            ></p>
-
+            <p id="authMessage" class="auth-message"></p>
 
             <div class="auth-switch">
-
                 <span id="switchText">
                     Pas encore de compte ?
                 </span>
@@ -106,17 +81,15 @@
                 >
                     Créer un compte
                 </button>
-
             </div>
 
         </div>
-
     </div>
 
 
-    <!-- ========================= -->
-    <!-- CHAT -->
-    <!-- ========================= -->
+    <!-- =========================
+         APPLICATION / CHAT
+         ========================= -->
 
     <div
         class="app"
@@ -127,8 +100,15 @@
         <aside class="sidebar">
 
             <div class="logo">
-                <div class="logo-icon">💬</div>
-                <span>MonChat</span>
+
+                <div class="logo-icon">
+                    💬
+                </div>
+
+                <span>
+                    MonChat
+                </span>
+
             </div>
 
 
@@ -215,7 +195,8 @@
             <section
                 class="messages"
                 id="messages"
-            ></section>
+            >
+            </section>
 
 
             <form
@@ -258,12 +239,11 @@
     </div>
 
 
-    <!-- SUPABASE -->
-
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Notre JavaScript -->
     <script src="script.js"></script>
 
 </body>
-
 </html>
