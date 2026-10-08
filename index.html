@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>MonChat</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,6 +16,7 @@
 
         <!-- Barre latérale -->
         <aside class="sidebar">
+
             <div class="logo">
                 <div class="logo-icon">💬</div>
                 <span>MonChat</span>
@@ -20,31 +24,47 @@
 
             <div class="profile">
                 <div class="avatar">A</div>
+
                 <div>
                     <strong>Adrien</strong>
                     <small>🟢 En ligne</small>
                 </div>
             </div>
 
-            <button class="new-chat">＋ Nouveau chat</button>
+            <button class="new-chat">
+                ＋ Nouveau chat
+            </button>
 
-            <div class="section-title">DISCUSSIONS</div>
+            <div class="section-title">
+                DISCUSSIONS
+            </div>
 
             <div class="chat selected">
-                <div class="avatar blue">G</div>
+
+                <div class="avatar blue">
+                    G
+                </div>
+
                 <div class="chat-info">
                     <strong>Groupe général</strong>
                     <small>Bienvenue sur MonChat !</small>
                 </div>
+
             </div>
 
             <div class="chat">
-                <div class="avatar purple">D</div>
+
+                <div class="avatar purple">
+                    D
+                </div>
+
                 <div class="chat-info">
                     <strong>Discussion</strong>
                     <small>Aucun message</small>
                 </div>
+
             </div>
+
         </aside>
 
 
@@ -52,45 +72,42 @@
         <main class="chat-area">
 
             <header class="chat-header">
+
                 <div>
                     <h2>Groupe général</h2>
                     <span>🟢 En ligne</span>
                 </div>
 
-                <button class="menu-button">⋮</button>
+                <button class="menu-button">
+                    ⋮
+                </button>
+
             </header>
 
 
-            <section class="messages" id="messages">
+            <!-- Messages -->
+            <section
+                class="messages"
+                id="messages"
+            >
 
-                <div class="message other">
-                    <div class="avatar blue">M</div>
-
-                    <div>
-                        <div class="message-name">MonChat</div>
-                        <div class="bubble">
-                            👋 Bienvenue sur MonChat !
-                        </div>
-                        <small class="time">17:30</small>
-                    </div>
-                </div>
-
-                <div class="message me">
-                    <div>
-                        <div class="bubble">
-                            Salut ! 👋
-                        </div>
-                        <small class="time">17:31</small>
-                    </div>
-                </div>
+                <!-- Les messages seront chargés par JavaScript -->
 
             </section>
 
 
             <!-- Barre d'écriture -->
-            <form class="input-area" id="messageForm">
+            <form
+                class="input-area"
+                id="messageForm"
+            >
 
-                <button type="button" class="attach">＋</button>
+                <button
+                    type="button"
+                    class="attach"
+                >
+                    ＋
+                </button>
 
                 <input
                     type="text"
@@ -99,9 +116,17 @@
                     autocomplete="off"
                 >
 
-                <button type="button" class="emoji">😊</button>
+                <button
+                    type="button"
+                    class="emoji"
+                >
+                    😊
+                </button>
 
-                <button type="submit" class="send">
+                <button
+                    type="submit"
+                    class="send"
+                >
                     ➤
                 </button>
 
@@ -111,7 +136,13 @@
 
     </div>
 
+
+    <!-- Supabase : UNE SEULE FOIS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Notre JavaScript -->
     <script src="script.js"></script>
 
 </body>
 </html>
+```
