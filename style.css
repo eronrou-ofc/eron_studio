@@ -6,15 +6,15 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
-    background: #080a0f;
-    color: white;
+    background: #000;
+    color: #fff;
     overflow: hidden;
 }
 
 
-/* =========================
-   PAGE CONNEXION
-   ========================= */
+/* =====================================================
+   PAGE DE CONNEXION — CYBERPUNK
+   ===================================================== */
 
 .auth-screen {
     position: relative;
@@ -29,20 +29,68 @@ body {
 
     background:
         radial-gradient(
-            circle at 20% 20%,
-            rgba(50, 80, 255, 0.15),
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at 80% 80%,
-            rgba(130, 50, 255, 0.12),
-            transparent 35%
-        ),
-        #080a0f;
+            circle at 50% 50%,
+            #151515 0%,
+            #070707 42%,
+            #000 100%
+        );
 }
 
 
-/* Canvas des particules */
+/* Grille cyberpunk */
+
+.auth-screen::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 45px 45px;
+
+    mask-image:
+        radial-gradient(
+            ellipse at center,
+            black 20%,
+            transparent 80%
+        );
+
+    pointer-events: none;
+}
+
+
+/* Vignette */
+
+.auth-screen::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 35%,
+            rgba(0, 0, 0, 0.8) 100%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   PARTICULES
+   ===================================================== */
 
 #particles {
     position: absolute;
@@ -53,40 +101,83 @@ body {
     width: 100%;
     height: 100%;
 
-    z-index: 0;
+    z-index: 1;
 
     pointer-events: none;
 }
 
 
-/* =========================
-   CARTE CONNEXION
-   ========================= */
+/* =====================================================
+   CARTE LOGIN
+   ===================================================== */
 
 .auth-card {
     position: relative;
 
     z-index: 5;
 
-    width: 400px;
+    width: 410px;
 
     padding: 42px 38px;
 
-    border-radius: 24px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28, 28, 28, 0.94),
+            rgba(7, 7, 7, 0.96)
+        );
 
-    background: rgba(15, 18, 27, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.18);
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
 
     box-shadow:
-        0 25px 80px rgba(0, 0, 0, 0.6),
-        0 0 40px rgba(70, 90, 255, 0.08);
+        0 0 0 1px rgba(255,255,255,0.02),
+        0 25px 80px rgba(0,0,0,0.9),
+        0 0 50px rgba(255,255,255,0.04);
 
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(18px);
 
     text-align: center;
 }
 
+
+/* Coins cyberpunk */
+
+.auth-card::before,
+.auth-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 22px;
+    height: 22px;
+
+    border-color: #fff;
+
+    opacity: 0.7;
+}
+
+.auth-card::before {
+    top: -1px;
+    left: -1px;
+
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+}
+
+.auth-card::after {
+    right: -1px;
+    bottom: -1px;
+
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+}
+
+
+/* =====================================================
+   LOGO
+   ===================================================== */
 
 .auth-logo {
     width: 70px;
@@ -98,72 +189,90 @@ body {
     align-items: center;
     justify-content: center;
 
-    border-radius: 20px;
+    border-radius: 16px;
 
-    font-size: 34px;
+    background: #050505;
 
-    background:
-        linear-gradient(
-            135deg,
-            #4263ff,
-            #8d4dff
-        );
+    border: 1px solid rgba(255,255,255,0.35);
+
+    font-size: 32px;
 
     box-shadow:
-        0 10px 35px rgba(70, 80, 255, 0.35);
+        0 0 20px rgba(255,255,255,0.08),
+        inset 0 0 20px rgba(255,255,255,0.03);
 }
 
 
 .auth-card h1 {
     font-size: 32px;
+
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
+
+    text-shadow:
+        0 0 12px rgba(255,255,255,0.35);
+
     margin-bottom: 8px;
 }
 
 
 .auth-subtitle {
-    color: #8e95a7;
-    font-size: 14px;
+    color: #888;
+
+    font-size: 13px;
+
+    letter-spacing: 0.5px;
+
     margin-bottom: 28px;
 }
 
 
-/* =========================
+/* =====================================================
    INPUTS
-   ========================= */
+   ===================================================== */
 
 .input-box {
     display: flex;
     align-items: center;
 
     width: 100%;
-
     height: 54px;
 
     margin-bottom: 14px;
 
     padding: 0 16px;
 
-    border-radius: 14px;
+    border-radius: 10px;
 
-    background: #11141d;
+    background: rgba(0,0,0,0.7);
 
-    border: 1px solid #242936;
+    border: 1px solid #292929;
 
-    transition: 0.2s;
+    transition: 0.25s;
+}
+
+
+.input-box:hover {
+    border-color: #555;
 }
 
 
 .input-box:focus-within {
-    border-color: #6170ff;
+    border-color: #fff;
 
     box-shadow:
-        0 0 0 3px rgba(80, 90, 255, 0.1);
+        0 0 15px rgba(255,255,255,0.08),
+        inset 0 0 10px rgba(255,255,255,0.025);
 }
 
 
 .input-box span {
     margin-right: 12px;
-    font-size: 18px;
+
+    font-size: 17px;
+
+    filter: grayscale(1);
 }
 
 
@@ -177,109 +286,153 @@ body {
 
     color: white;
 
-    font-size: 15px;
+    font-size: 14px;
 }
 
 
 .input-box input::placeholder {
-    color: #686f80;
+    color: #555;
 }
 
 
-/* =========================
-   BOUTON CONNEXION
-   ========================= */
+/* =====================================================
+   BOUTON
+   ===================================================== */
 
 .auth-button {
+    position: relative;
+
     width: 100%;
     height: 54px;
 
     margin-top: 8px;
 
-    border: none;
-    border-radius: 14px;
+    border: 1px solid #fff;
 
-    background:
-        linear-gradient(
-            135deg,
-            #4263ff,
-            #814dff
-        );
+    border-radius: 10px;
 
-    color: white;
+    background: #fff;
 
-    font-size: 15px;
-    font-weight: bold;
+    color: #000;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
 
     cursor: pointer;
+
+    overflow: hidden;
 
     transition: 0.2s;
 }
 
 
+.auth-button::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -100%;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(0,0,0,0.15),
+            transparent
+        );
+
+    transition: 0.5s;
+}
+
+
+.auth-button:hover::before {
+    left: 100%;
+}
+
+
 .auth-button:hover {
-    transform: translateY(-2px);
+    background: #000;
+
+    color: #fff;
 
     box-shadow:
-        0 10px 30px rgba(70, 80, 255, 0.3);
+        0 0 25px rgba(255,255,255,0.15);
 }
 
 
 .auth-button:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
 
-/* =========================
-   MESSAGES AUTH
-   ========================= */
+/* =====================================================
+   MESSAGE ERREUR
+   ===================================================== */
 
 .auth-message {
     min-height: 20px;
 
     margin-top: 16px;
 
-    font-size: 13px;
+    color: #fff;
 
-    color: #ff6b6b;
+    font-size: 12px;
+
+    text-shadow:
+        0 0 8px rgba(255,255,255,0.4);
 }
 
 
-/* =========================
-   CHANGEMENT LOGIN / INSCRIPTION
-   ========================= */
+/* =====================================================
+   SWITCH
+   ===================================================== */
 
 .auth-switch {
     margin-top: 20px;
 
-    color: #858c9d;
+    color: #666;
 
-    font-size: 13px;
+    font-size: 12px;
 }
 
 
 .auth-switch button {
     border: none;
+
     background: none;
 
-    color: #7180ff;
+    color: #fff;
 
     cursor: pointer;
 
     font-weight: bold;
 
     margin-left: 5px;
+
+    text-decoration: underline;
+
+    text-underline-offset: 3px;
 }
 
 
 .auth-switch button:hover {
-    text-decoration: underline;
+    text-shadow:
+        0 0 10px white;
 }
 
 
-/* =========================
+/* =====================================================
    APPLICATION
-   ========================= */
+   ===================================================== */
 
 .app {
     width: 100vw;
@@ -287,13 +440,15 @@ body {
 
     display: flex;
 
-    background: #090b10;
+    background: #050505;
+
+    color: white;
 }
 
 
-/* =========================
+/* =====================================================
    SIDEBAR
-   ========================= */
+   ===================================================== */
 
 .sidebar {
     width: 280px;
@@ -302,9 +457,9 @@ body {
 
     padding: 25px 18px;
 
-    background: #0d1017;
+    background: #090909;
 
-    border-right: 1px solid #1d212b;
+    border-right: 1px solid #222;
 }
 
 
@@ -315,9 +470,13 @@ body {
 
     gap: 12px;
 
-    font-size: 21px;
+    font-size: 20px;
 
     font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
 
     margin-bottom: 35px;
 }
@@ -331,16 +490,22 @@ body {
     align-items: center;
     justify-content: center;
 
-    border-radius: 13px;
+    border-radius: 10px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #4263ff,
-            #814dff
-        );
+    background: #fff;
+
+    color: #000;
+
+    filter: grayscale(1);
+
+    box-shadow:
+        0 0 18px rgba(255,255,255,0.12);
 }
 
+
+/* =====================================================
+   PROFIL
+   ===================================================== */
 
 .profile {
     display: flex;
@@ -351,9 +516,11 @@ body {
 
     padding: 12px;
 
-    border-radius: 14px;
+    border-radius: 10px;
 
-    background: #121620;
+    background: #101010;
+
+    border: 1px solid #1f1f1f;
 
     margin-bottom: 20px;
 }
@@ -362,7 +529,7 @@ body {
 .profile strong {
     display: block;
 
-    font-size: 14px;
+    font-size: 13px;
 }
 
 
@@ -371,15 +538,15 @@ body {
 
     margin-top: 4px;
 
-    color: #777f91;
+    color: #666;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
-/* =========================
+/* =====================================================
    AVATAR
-   ========================= */
+   ===================================================== */
 
 .avatar {
     width: 40px;
@@ -391,43 +558,36 @@ body {
     align-items: center;
     justify-content: center;
 
-    border-radius: 50%;
+    border-radius: 8px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #596cff,
-            #865cff
-        );
+    background: #fff;
+
+    color: #000;
 
     font-weight: bold;
 }
 
 
 .avatar.blue {
-    background:
-        linear-gradient(
-            135deg,
-            #277cff,
-            #36b9ff
-        );
+    background: #ddd;
+
+    color: #000;
 }
 
 
-/* =========================
+/* =====================================================
    NOUVEAU CHAT
-   ========================= */
+   ===================================================== */
 
 .new-chat {
     width: 100%;
-
     height: 44px;
 
-    border: none;
+    border: 1px solid #292929;
 
-    border-radius: 12px;
+    border-radius: 9px;
 
-    background: #171b25;
+    background: #111;
 
     color: white;
 
@@ -440,22 +600,24 @@ body {
 
 
 .new-chat:hover {
-    background: #202532;
+    background: #fff;
+
+    color: #000;
 }
 
 
-/* =========================
+/* =====================================================
    DISCUSSIONS
-   ========================= */
+   ===================================================== */
 
 .section-title {
-    color: #606879;
+    color: #555;
 
-    font-size: 11px;
+    font-size: 10px;
 
     font-weight: bold;
 
-    letter-spacing: 1px;
+    letter-spacing: 2px;
 
     margin: 0 10px 12px;
 }
@@ -470,14 +632,16 @@ body {
 
     padding: 10px;
 
-    border-radius: 13px;
+    border-radius: 9px;
 
     cursor: pointer;
 }
 
 
 .chat.selected {
-    background: #171b27;
+    background: #161616;
+
+    border-left: 2px solid white;
 }
 
 
@@ -493,15 +657,15 @@ body {
 
     margin-top: 4px;
 
-    color: #6e7687;
+    color: #555;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
-/* =========================
-   ZONE CHAT
-   ========================= */
+/* =====================================================
+   CHAT
+   ===================================================== */
 
 .chat-area {
     flex: 1;
@@ -511,12 +675,14 @@ body {
     flex-direction: column;
 
     min-width: 0;
+
+    background: #050505;
 }
 
 
-/* =========================
+/* =====================================================
    HEADER
-   ========================= */
+   ===================================================== */
 
 .chat-header {
     height: 80px;
@@ -529,14 +695,16 @@ body {
 
     justify-content: space-between;
 
-    border-bottom: 1px solid #1c2029;
+    border-bottom: 1px solid #1d1d1d;
 
-    background: #0d1017;
+    background: #090909;
 }
 
 
 .chat-header h2 {
-    font-size: 17px;
+    font-size: 16px;
+
+    letter-spacing: 1px;
 }
 
 
@@ -545,9 +713,9 @@ body {
 
     margin-top: 5px;
 
-    color: #54d68a;
+    color: #888;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
@@ -556,7 +724,7 @@ body {
 
     background: transparent;
 
-    color: #8b92a3;
+    color: #777;
 
     font-size: 25px;
 
@@ -564,9 +732,9 @@ body {
 }
 
 
-/* =========================
+/* =====================================================
    MESSAGES
-   ========================= */
+   ===================================================== */
 
 .messages {
     flex: 1;
@@ -594,11 +762,13 @@ body {
 
     padding: 11px 15px;
 
-    border-radius: 15px;
+    border-radius: 10px;
 
-    background: #171b25;
+    background: #151515;
 
-    color: #e9ebef;
+    border: 1px solid #242424;
+
+    color: #eee;
 
     font-size: 14px;
 
@@ -607,18 +777,17 @@ body {
 
 
 .message.me .message-bubble {
-    background:
-        linear-gradient(
-            135deg,
-            #4263ff,
-            #744cff
-        );
+    background: #fff;
+
+    color: #000;
+
+    border-color: #fff;
 }
 
 
-/* =========================
-   ZONE ENVOI
-   ========================= */
+/* =====================================================
+   INPUT CHAT
+   ===================================================== */
 
 .input-area {
     min-height: 78px;
@@ -631,9 +800,9 @@ body {
 
     gap: 10px;
 
-    border-top: 1px solid #1c2029;
+    border-top: 1px solid #1d1d1d;
 
-    background: #0d1017;
+    background: #090909;
 }
 
 
@@ -644,13 +813,13 @@ body {
 
     padding: 0 16px;
 
-    border: 1px solid #252a35;
+    border: 1px solid #262626;
 
-    border-radius: 14px;
+    border-radius: 10px;
 
     outline: none;
 
-    background: #141820;
+    background: #111;
 
     color: white;
 
@@ -659,7 +828,7 @@ body {
 
 
 .input-area input:focus {
-    border-color: #5364ff;
+    border-color: #aaa;
 }
 
 
@@ -669,49 +838,73 @@ body {
     width: 45px;
     height: 45px;
 
-    border: none;
+    border: 1px solid #292929;
 
-    border-radius: 13px;
+    border-radius: 10px;
 
     cursor: pointer;
 
     color: white;
 
-    background: #171b25;
+    background: #111;
 
-    font-size: 18px;
+    font-size: 17px;
+}
+
+
+.attach:hover,
+.emoji:hover {
+    background: #fff;
+
+    color: #000;
 }
 
 
 .send {
-    background:
-        linear-gradient(
-            135deg,
-            #4263ff,
-            #814dff
-        );
+    background: #fff;
+
+    color: #000;
+
+    border-color: white;
 }
 
 
-/* =========================
+.send:hover {
+    background: #000;
+
+    color: white;
+}
+
+
+/* =====================================================
    SCROLLBAR
-   ========================= */
+   ===================================================== */
 
 .messages::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
+}
+
+
+.messages::-webkit-scrollbar-track {
+    background: #080808;
 }
 
 
 .messages::-webkit-scrollbar-thumb {
-    background: #292f3b;
+    background: #444;
 
     border-radius: 10px;
 }
 
 
-/* =========================
+.messages::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+
+/* =====================================================
    MOBILE
-   ========================= */
+   ===================================================== */
 
 @media (max-width: 700px) {
 
@@ -736,5 +929,4 @@ body {
     .input-area {
         padding: 12px;
     }
-
 }
