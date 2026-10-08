@@ -14,49 +14,89 @@
 <body>
 
     <!-- ========================= -->
-    <!-- CONNEXION / INSCRIPTION -->
+    <!-- CONNEXION -->
     <!-- ========================= -->
 
     <div id="authScreen" class="auth-screen">
 
-        <div class="auth-box">
+        <div class="auth-card">
 
-            <h1>💬 MonChat</h1>
+            <div class="auth-logo">
+                💬
+            </div>
 
-            <p id="authTitle">Connexion</p>
+            <h1>MonChat</h1>
+
+            <p class="auth-subtitle" id="authTitle">
+                Connecte-toi à ton espace
+            </p>
 
             <form id="authForm">
 
-                <input
-                    type="email"
-                    id="emailInput"
-                    placeholder="Adresse email"
-                    required
-                >
+                <div class="input-box">
 
-                <input
-                    type="password"
-                    id="passwordInput"
-                    placeholder="Mot de passe"
-                    required
-                    minlength="6"
-                >
+                    <span>👤</span>
 
-                <button type="submit" id="authButton">
+                    <input
+                        type="text"
+                        id="usernameInput"
+                        placeholder="Pseudo"
+                        autocomplete="username"
+                        required
+                        minlength="3"
+                        maxlength="20"
+                    >
+
+                </div>
+
+
+                <div class="input-box">
+
+                    <span>🔒</span>
+
+                    <input
+                        type="password"
+                        id="passwordInput"
+                        placeholder="Mot de passe"
+                        autocomplete="current-password"
+                        required
+                        minlength="6"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    id="authButton"
+                    class="auth-button"
+                >
                     Se connecter
                 </button>
 
             </form>
 
-            <p id="authMessage"></p>
 
-            <button
-                type="button"
-                id="switchAuth"
-                class="switch-auth"
-            >
-                Créer un compte
-            </button>
+            <p
+                id="authMessage"
+                class="auth-message"
+            ></p>
+
+
+            <div class="auth-switch">
+
+                <span id="switchText">
+                    Pas encore de compte ?
+                </span>
+
+                <button
+                    type="button"
+                    id="switchAuth"
+                >
+                    Créer un compte
+                </button>
+
+            </div>
 
         </div>
 
@@ -64,10 +104,14 @@
 
 
     <!-- ========================= -->
-    <!-- APPLICATION -->
+    <!-- CHAT -->
     <!-- ========================= -->
 
-    <div class="app" id="chatApp" style="display:none;">
+    <div
+        class="app"
+        id="chatApp"
+        style="display:none;"
+    >
 
         <aside class="sidebar">
 
@@ -76,29 +120,40 @@
                 <span>MonChat</span>
             </div>
 
+
             <div class="profile">
 
-                <div class="avatar" id="userAvatar">
+                <div
+                    class="avatar"
+                    id="userAvatar"
+                >
                     A
                 </div>
 
                 <div>
+
                     <strong id="usernameDisplay">
                         Utilisateur
                     </strong>
 
-                    <small>🟢 En ligne</small>
+                    <small>
+                        🟢 En ligne
+                    </small>
+
                 </div>
 
             </div>
+
 
             <button class="new-chat">
                 ＋ Nouveau chat
             </button>
 
+
             <div class="section-title">
                 DISCUSSIONS
             </div>
+
 
             <div class="chat selected">
 
@@ -149,8 +204,7 @@
             <section
                 class="messages"
                 id="messages"
-            >
-            </section>
+            ></section>
 
 
             <form
@@ -197,11 +251,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- JAVASCRIPT -->
-
     <script src="script.js"></script>
 
 </body>
 
 </html>
-

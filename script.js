@@ -1,5 +1,6 @@
+
 // ===============================
-// CONFIGURATION SUPABASE
+// SUPABASE
 // ===============================
 
 const SUPABASE_URL = "https://gyjonweumwmlvfvcksjk.supabase.co";
@@ -19,13 +20,15 @@ const authScreen = document.getElementById("authScreen");
 const chatApp = document.getElementById("chatApp");
 
 const authForm = document.getElementById("authForm");
-const emailInput = document.getElementById("emailInput");
+const usernameInput = document.getElementById("usernameInput");
 const passwordInput = document.getElementById("passwordInput");
 
 const authButton = document.getElementById("authButton");
 const authTitle = document.getElementById("authTitle");
 const authMessage = document.getElementById("authMessage");
+
 const switchAuth = document.getElementById("switchAuth");
+const switchText = document.getElementById("switchText");
 
 const usernameDisplay = document.getElementById("usernameDisplay");
 const userAvatar = document.getElementById("userAvatar");
@@ -36,105 +39,232 @@ const messages = document.getElementById("messages");
 
 
 // ===============================
-// MODE CONNEXION / INSCRIPTION
+// MODE
 // ===============================
 
 let signupMode = false;
 
-switchAuth.addEventListener("click", function () {
+
+// ===============================
+// CHANGER CONNEXION / INSCRIPTION
+// ===============================
+
+switchAuth.addEventListener("click", () => {
 
     signupMode = !signupMode;
 
     authMessage.textContent = "";
 
+    passwordInput.value = "";
+
     if (signupMode) {
 
-        authTitle.textContent = "Créer un compte";
+        authTitle.textContent =
+            "Crée ton compte";
 
-        authButton.textContent = "Créer mon compte";
+        authButton.textContent =
+            "Créer mon compte";
 
-        switchAuth.textContent = "J'ai déjà un compte";
+        switchText.textContent =
+            "Déjà un compte ?";
+
+        switchAuth.textContent =
+            "Se connecter";
 
     } else {
 
-        authTitle.textContent = "Connexion";
+        authTitle.textContent =
+            "Connecte-toi à ton espace";
 
-        authButton.textContent = "Se connecter";
+        authButton.textContent =
+            "Se connecter";
 
-        switchAuth.textContent = "Créer un compte";
+        switchText.textContent =
+            "Pas encore de compte ?";
+
+        switchAuth.textContent =
+            "Créer un compte";
     }
 });
 
 
 // ===============================
-// INSCRIPTION / CONNEXION
+// CONNEXION / INSCRIPTION
 // ===============================
 
-authForm.addEventListener("submit", async function (event) {
+authForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+    const username =
+        usernameInput.value.trim().toLowerCase();
 
-    authMessage.textContent = "Chargement...";
+    const password =
+        passwordInput.value;
 
+    if (username.length < 3) {
+
+        authMessage.textContent =
+            "❌ Le pseudo doit avoir au moins 3 caractères.";
+
+        return;
+    }
+
+    if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+
+        authMessage.textContent =
+            "❌ Utilise seulement lettres, chiffres, . _ ou -";
+
+        return;
+    }
+
+    if (password.length < 6) {
+
+        authMessage.textContent =
+            "❌ Le mot de passe doit avoir au moins 6 caractères.";
+
+        return;
+    }
+
+
+    authButton.disabled = true;
+
+    authButton.textContent =
+        signupMode
+            ? "Création..."
+            : "Connexion...";
+
+
+    const email =
+        username + "@monchat.local";
+
+
+    // ===============================
     // INSCRIPTION
+    // ===============================
+
     if (signupMode) {
 
-        const { data, error } =
-            await supabaseClient.auth.signUp({
-                email: email,
-                password: password
-            });
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.signUp({
+
+            email: email,
+
+            password: password
+
+        });
+
 
         if (error) {
 
             authMessage.textContent =
                 "❌ " + error.message;
 
+            resetButton();
+
             return;
         }
 
-        if (data.session) {
+
+        if (!data.user) {
 
             authMessage.textContent =
-                "✅ Compte créé !";
+                "❌ Impossible de créer le compte.";
 
-            showChat();
+            resetButton();
 
-        } else {
-
-            authMessage.textContent =
-                "✅ Compte créé ! Vérifie ton email pour confirmer ton compte.";
-
+            return;
         }
+
+
+        // Créer le profil
+
+        const {
+            error: profileError
+        } = await supabaseClient
+            .from("profiles")
+            .insert({
+
+                id: data.user.id,
+
+                username: username
+
+            });
+
+
+        if (profileError) {
+
+            console.error(profileError);
+
+            authMessage.textContent =
+                "❌ Compte créé mais profil impossible à créer.";
+
+            resetButton();
+
+            return;
+        }
+
+
+        authMessage.textContent =
+            "✅ Compte créé !";
+
+
+        await showChat();
 
         return;
     }
 
 
+    // ===============================
     // CONNEXION
-    const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
+    // ===============================
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+    });
+
 
     if (error) {
 
         authMessage.textContent =
-            "❌ " + error.message;
+            "❌ Pseudo ou mot de passe incorrect.";
+
+        resetButton();
 
         return;
     }
 
+
     if (data.user) {
 
-        showChat();
+        await showChat();
     }
 
 });
+
+
+// ===============================
+// BOUTON
+// ===============================
+
+function resetButton() {
+
+    authButton.disabled = false;
+
+    authButton.textContent =
+        signupMode
+            ? "Créer mon compte"
+            : "Se connecter";
+}
 
 
 // ===============================
@@ -143,9 +273,12 @@ authForm.addEventListener("submit", async function (event) {
 
 async function showChat() {
 
-    authScreen.style.display = "none";
+    authScreen.style.display =
+        "none";
 
-    chatApp.style.display = "flex";
+    chatApp.style.display =
+        "flex";
+
 
     const {
         data: {
@@ -153,24 +286,45 @@ async function showChat() {
         }
     } = await supabaseClient.auth.getUser();
 
+
     if (!user) {
         return;
     }
 
-    const username =
-        user.email.split("@")[0];
 
-    usernameDisplay.textContent = username;
+    const {
+        data: profile
+    } = await supabaseClient
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+
+
+    let username =
+        profile?.username;
+
+
+    if (!username) {
+
+        username =
+            user.email.split("@")[0];
+    }
+
+
+    usernameDisplay.textContent =
+        username;
 
     userAvatar.textContent =
         username.charAt(0).toUpperCase();
+
 
     await loadMessages();
 }
 
 
 // ===============================
-// VÉRIFIER LA SESSION
+// SESSION
 // ===============================
 
 async function checkSession() {
@@ -181,23 +335,27 @@ async function checkSession() {
         }
     } = await supabaseClient.auth.getSession();
 
+
     if (session) {
 
-        showChat();
+        await showChat();
 
     } else {
 
-        authScreen.style.display = "flex";
+        authScreen.style.display =
+            "flex";
 
-        chatApp.style.display = "none";
+        chatApp.style.display =
+            "none";
     }
 }
+
 
 checkSession();
 
 
 // ===============================
-// CHARGER LES MESSAGES
+// CHARGER MESSAGES
 // ===============================
 
 async function loadMessages() {
@@ -212,15 +370,17 @@ async function loadMessages() {
             ascending: true
         });
 
+
     if (error) {
 
         console.error(
-            "Erreur chargement messages :",
+            "Erreur messages :",
             error
         );
 
         return;
     }
+
 
     messages.innerHTML = "";
 
@@ -229,7 +389,7 @@ async function loadMessages() {
 
 
 // ===============================
-// AFFICHER UN MESSAGE
+// AFFICHER MESSAGE
 // ===============================
 
 async function displayMessage(message) {
@@ -240,24 +400,43 @@ async function displayMessage(message) {
         }
     } = await supabaseClient.auth.getUser();
 
-    const currentUsername =
-        user
-            ? user.email.split("@")[0]
-            : "";
+
+    let currentUsername = "";
+
+
+    if (user) {
+
+        const {
+            data: profile
+        } = await supabaseClient
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .single();
+
+
+        currentUsername =
+            profile?.username || "";
+    }
+
 
     const div =
         document.createElement("div");
 
+
     const isMe =
         message.username === currentUsername;
+
 
     div.className =
         isMe
             ? "message me"
             : "message other";
 
+
     const date =
         new Date(message.created_at);
+
 
     const time =
         date.toLocaleTimeString(
@@ -268,15 +447,18 @@ async function displayMessage(message) {
             }
         );
 
+
     div.innerHTML = `
 
         <div>
 
             ${
                 !isMe
-                    ? `<div class="message-name">
-                        ${escapeHTML(message.username)}
-                       </div>`
+                    ? `
+                        <div class="message-name">
+                            ${escapeHTML(message.username)}
+                        </div>
+                    `
                     : ""
             }
 
@@ -289,7 +471,9 @@ async function displayMessage(message) {
             </small>
 
         </div>
+
     `;
+
 
     messages.appendChild(div);
 
@@ -299,21 +483,24 @@ async function displayMessage(message) {
 
 
 // ===============================
-// ENVOYER UN MESSAGE
+// ENVOYER MESSAGE
 // ===============================
 
 messageForm.addEventListener(
     "submit",
-    async function (event) {
+    async (event) => {
 
         event.preventDefault();
+
 
         const text =
             messageInput.value.trim();
 
+
         if (!text) {
             return;
         }
+
 
         const {
             data: {
@@ -321,21 +508,52 @@ messageForm.addEventListener(
             }
         } = await supabaseClient.auth.getUser();
 
+
         if (!user) {
+
+            alert(
+                "Tu dois être connecté."
+            );
+
             return;
         }
 
+
+        const {
+            data: profile
+        } = await supabaseClient
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .single();
+
+
         const username =
-            user.email.split("@")[0];
+            profile?.username;
+
+
+        if (!username) {
+
+            alert(
+                "Profil introuvable."
+            );
+
+            return;
+        }
+
 
         const {
             error
         } = await supabaseClient
             .from("messages")
             .insert({
+
                 username: username,
+
                 content: text
+
             });
+
 
         if (error) {
 
@@ -350,6 +568,7 @@ messageForm.addEventListener(
 
             return;
         }
+
 
         messageInput.value = "";
     }
@@ -366,12 +585,17 @@ supabaseClient
         "postgres_changes",
         {
             event: "INSERT",
+
             schema: "public",
+
             table: "messages"
         },
-        function (payload) {
 
-            displayMessage(payload.new);
+        (payload) => {
+
+            displayMessage(
+                payload.new
+            );
         }
     )
     .subscribe();
@@ -386,7 +610,8 @@ function escapeHTML(text) {
     const div =
         document.createElement("div");
 
-    div.textContent = text;
+    div.textContent =
+        text;
 
     return div.innerHTML;
 }
