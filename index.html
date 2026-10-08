@@ -9,19 +9,14 @@
 
 <body>
 
-    <!-- =========================
-         PAGE DE CONNEXION
-         ========================= -->
-
+    <!-- CONNEXION -->
     <div id="authScreen" class="auth-screen">
 
         <canvas id="particles"></canvas>
 
         <div class="auth-card">
 
-            <div class="auth-logo">
-                💬
-            </div>
+            <div class="auth-logo">💬</div>
 
             <h1>MonChat</h1>
 
@@ -33,7 +28,6 @@
 
                 <div class="input-box">
                     <span>👤</span>
-
                     <input
                         type="text"
                         id="usernameInput"
@@ -47,7 +41,6 @@
 
                 <div class="input-box">
                     <span>🔒</span>
-
                     <input
                         type="password"
                         id="passwordInput"
@@ -58,11 +51,7 @@
                     >
                 </div>
 
-                <button
-                    type="submit"
-                    id="authButton"
-                    class="auth-button"
-                >
+                <button type="submit" id="authButton" class="auth-button">
                     Se connecter
                 </button>
 
@@ -75,10 +64,7 @@
                     Pas encore de compte ?
                 </span>
 
-                <button
-                    type="button"
-                    id="switchAuth"
-                >
+                <button type="button" id="switchAuth">
                     Créer un compte
                 </button>
             </div>
@@ -87,41 +73,26 @@
     </div>
 
 
-    <!-- =========================
-         APPLICATION / CHAT
-         ========================= -->
+    <!-- APPLICATION -->
+    <div class="app" id="chatApp" style="display:none;">
 
-    <div
-        class="app"
-        id="chatApp"
-        style="display:none;"
-    >
-
+        <!-- SIDEBAR -->
         <aside class="sidebar">
 
             <div class="logo">
-
-                <div class="logo-icon">
-                    💬
-                </div>
-
-                <span>
-                    MonChat
-                </span>
-
+                <div class="logo-icon">💬</div>
+                <span>MONCHAT</span>
             </div>
 
 
+            <!-- PROFIL -->
             <div class="profile">
 
-                <div
-                    class="avatar"
-                    id="userAvatar"
-                >
+                <div class="avatar" id="userAvatar">
                     A
                 </div>
 
-                <div>
+                <div class="profile-info">
 
                     <strong id="usernameDisplay">
                         Utilisateur
@@ -136,51 +107,63 @@
             </div>
 
 
-            <button class="new-chat">
-                ＋ Nouveau chat
-            </button>
+            <!-- RECHERCHE -->
+            <div class="search-box">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    id="userSearch"
+                    placeholder="Rechercher un utilisateur..."
+                    autocomplete="off"
+                >
+
+            </div>
 
 
+            <!-- RESULTATS -->
+            <div
+                class="search-results"
+                id="searchResults"
+            ></div>
+
+
+            <!-- DISCUSSIONS -->
             <div class="section-title">
                 DISCUSSIONS
             </div>
 
+            <div
+                class="conversations"
+                id="conversations"
+            ></div>
 
-            <div class="chat selected">
 
-                <div class="avatar blue">
-                    G
-                </div>
-
-                <div class="chat-info">
-
-                    <strong>
-                        Groupe général
-                    </strong>
-
-                    <small>
-                        Discussion générale
-                    </small>
-
-                </div>
-
-            </div>
+            <!-- DECONNEXION -->
+            <button
+                class="logout-button"
+                id="logoutButton"
+            >
+                🚪 Déconnexion
+            </button>
 
         </aside>
 
 
+        <!-- CHAT -->
         <main class="chat-area">
 
             <header class="chat-header">
 
                 <div>
 
-                    <h2>
-                        Groupe général
+                    <h2 id="chatTitle">
+                        Sélectionne une conversation
                     </h2>
 
-                    <span>
-                        🟢 En ligne
+                    <span id="chatStatus">
+                        Aucun utilisateur sélectionné
                     </span>
 
                 </div>
@@ -192,13 +175,32 @@
             </header>
 
 
+            <!-- MESSAGES -->
             <section
                 class="messages"
                 id="messages"
             >
+
+                <div class="empty-chat" id="emptyChat">
+
+                    <div class="empty-icon">
+                        💬
+                    </div>
+
+                    <h3>
+                        Tes conversations
+                    </h3>
+
+                    <p>
+                        Recherche un utilisateur pour commencer à discuter.
+                    </p>
+
+                </div>
+
             </section>
 
 
+            <!-- ENVOI -->
             <form
                 class="input-area"
                 id="messageForm"
@@ -214,8 +216,9 @@
                 <input
                     type="text"
                     id="messageInput"
-                    placeholder="Écris un message..."
+                    placeholder="Sélectionne d'abord un utilisateur..."
                     autocomplete="off"
+                    disabled
                 >
 
                 <button
@@ -228,6 +231,7 @@
                 <button
                     type="submit"
                     class="send"
+                    disabled
                 >
                     ➤
                 </button>
@@ -239,10 +243,10 @@
     </div>
 
 
-    <!-- Supabase -->
+    <!-- SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Notre JavaScript -->
+    <!-- MONCHAT -->
     <script src="script.js"></script>
 
 </body>

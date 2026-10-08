@@ -6,6 +6,7 @@
 const SUPABASE_URL = "https://gyjonweumwmlvfvcksjk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VbxuB8dM6XPJgK8xR3N2dA_S3b60VCk";
 
+
 const supabaseClient =
     window.supabase.createClient(
         SUPABASE_URL,
@@ -13,9 +14,9 @@ const supabaseClient =
     );
 
 
-/* =========================
+/* =====================================================
    ELEMENTS
-   ========================= */
+   ===================================================== */
 
 const authScreen =
     document.getElementById("authScreen");
@@ -53,22 +54,54 @@ const usernameDisplay =
 const userAvatar =
     document.getElementById("userAvatar");
 
+const userSearch =
+    document.getElementById("userSearch");
+
+const searchResults =
+    document.getElementById("searchResults");
+
+const conversations =
+    document.getElementById("conversations");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+const chatTitle =
+    document.getElementById("chatTitle");
+
+const chatStatus =
+    document.getElementById("chatStatus");
+
+const messagesContainer =
+    document.getElementById("messages");
+
+const emptyChat =
+    document.getElementById("emptyChat");
+
 const messageForm =
     document.getElementById("messageForm");
 
 const messageInput =
     document.getElementById("messageInput");
 
-const messagesContainer =
-    document.getElementById("messages");
+const sendButton =
+    document.querySelector(".send");
 
 
 let isSignup = false;
 
+let currentUser = null;
 
-/* =========================
-   CHANGER LOGIN / INSCRIPTION
-   ========================= */
+let currentProfile = null;
+
+let selectedUser = null;
+
+let realtimeChannel = null;
+
+
+/* =====================================================
+   LOGIN / INSCRIPTION
+   ===================================================== */
 
 switchAuth.addEventListener("click", () => {
 
@@ -107,9 +140,9 @@ switchAuth.addEventListener("click", () => {
 });
 
 
-/* =========================
-   AUTH
-   ========================= */
+/* =====================================================
+   AUTHENTIFICATION
+   ===================================================== */
 
 authForm.addEventListener("submit", async (event) => {
 
@@ -127,7 +160,7 @@ authForm.addEventListener("submit", async (event) => {
     if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
 
         authMessage.textContent =
-            "Le pseudo contient des caractères invalides.";
+            "Pseudo invalide.";
 
         return;
     }
@@ -155,8 +188,8 @@ authForm.addEventListener("submit", async (event) => {
 
     authButton.textContent =
         isSignup
-            ? "Création..."
-            : "Connexion...";
+            ? "CRÉATION..."
+            : "CONNEXION...";
 
 
     const email =
@@ -167,10 +200,13 @@ authForm.addEventListener("submit", async (event) => {
 
         if (isSignup) {
 
-            const { data, error } =
+            const {
+                data,
+                error
+            } =
                 await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password
+                    email,
+                    password
                 });
 
 
@@ -186,23 +222,19 @@ authForm.addEventListener("submit", async (event) => {
             }
 
 
-            const { error: profileError } =
+            const {
+                error: profileError
+            } =
                 await supabaseClient
                     .from("profiles")
                     .insert({
                         id: data.user.id,
-                        username: username
+                        username
                     });
 
 
             if (profileError) {
-
-                console.error(profileError);
-
-                authMessage.textContent =
-                    "Compte créé, mais impossible de créer le profil.";
-
-                return;
+                throw profileError;
             }
 
 
@@ -210,11 +242,13 @@ authForm.addEventListener("submit", async (event) => {
 
         } else {
 
-            const { error } =
+            const {
+                error
+            } =
                 await supabaseClient.auth
                     .signInWithPassword({
-                        email: email,
-                        password: password
+                        email,
+                        password
                     });
 
 
@@ -246,9 +280,41 @@ authForm.addEventListener("submit", async (event) => {
 });
 
 
-/* =========================
-   AFFICHER LE CHAT
-   ========================= */
+/* =====================================================
+   SESSION
+   ===================================================== */
+
+async function checkSession() {
+
+    const {
+        data: {
+            session
+        }
+    } =
+        await supabaseClient.auth.getSession();
+
+
+    if (session) {
+
+        await showChat();
+
+    } else {
+
+        authScreen.style.display =
+            "flex";
+
+        chatApp.style.display =
+            "none";
+    }
+}
+
+
+checkSession();
+
+
+/* =====================================================
+   AFFICHER L'APPLICATION
+   ===================================================== */
 
 async function showChat() {
 
@@ -256,7 +322,8 @@ async function showChat() {
         data: {
             user
         }
-    } = await supabaseClient.auth.getUser();
+    } =
+        await supabaseClient.auth.getUser();
 
 
     if (!user) {
@@ -264,14 +331,18 @@ async function showChat() {
     }
 
 
+    currentUser = user;
+
+
     const {
         data: profile,
         error
-    } = await supabaseClient
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, username")
+            .eq("id", user.id)
+            .single();
 
 
     if (error) {
@@ -282,8 +353,12 @@ async function showChat() {
     }
 
 
+    currentProfile = profile;
+
+
     usernameDisplay.textContent =
         profile.username;
+
 
     userAvatar.textContent =
         profile.username
@@ -298,47 +373,122 @@ async function showChat() {
         "flex";
 
 
-    await loadMessages();
+    await loadConversations();
 }
 
 
-/* =========================
-   SESSION
-   ========================= */
+/* =====================================================
+   DECONNEXION
+   ===================================================== */
 
-async function checkSession() {
+logoutButton.addEventListener("click", async () => {
 
-    const {
-        data: {
-            session
-        }
-    } = await supabaseClient.auth.getSession();
+    if (realtimeChannel) {
 
+        await supabaseClient
+            .removeChannel(realtimeChannel);
 
-    if (session) {
-        await showChat();
+        realtimeChannel = null;
     }
-}
 
 
-checkSession();
+    await supabaseClient.auth.signOut();
 
 
-/* =========================
-   CHARGER LES MESSAGES
-   ========================= */
+    currentUser = null;
 
-async function loadMessages() {
+    currentProfile = null;
+
+    selectedUser = null;
+
+
+    chatApp.style.display =
+        "none";
+
+    authScreen.style.display =
+        "flex";
+
+
+    usernameInput.value = "";
+
+    passwordInput.value = "";
+
+    authMessage.textContent = "";
+
+    messageInput.value = "";
+
+    messageInput.disabled = true;
+
+    sendButton.disabled = true;
+
+    messagesContainer.innerHTML = "";
+
+
+    const empty =
+        document.createElement("div");
+
+    empty.className =
+        "empty-chat";
+
+    empty.innerHTML = `
+        <div class="empty-icon">💬</div>
+        <h3>Tes conversations</h3>
+        <p>Recherche un utilisateur pour commencer à discuter.</p>
+    `;
+
+    messagesContainer.appendChild(empty);
+});
+
+
+/* =====================================================
+   RECHERCHE UTILISATEUR
+   ===================================================== */
+
+let searchTimeout = null;
+
+
+userSearch.addEventListener("input", () => {
+
+    clearTimeout(searchTimeout);
+
+
+    const query =
+        userSearch.value.trim();
+
+
+    if (!query) {
+
+        searchResults.innerHTML = "";
+
+        return;
+    }
+
+
+    searchTimeout =
+        setTimeout(
+            () => searchUsers(query),
+            250
+        );
+});
+
+
+async function searchUsers(query) {
+
+    if (!currentUser) {
+        return;
+    }
+
 
     const {
         data,
         error
-    } = await supabaseClient
-        .from("messages")
-        .select("*")
-        .order("created_at", {
-            ascending: true
-        });
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, username")
+            .ilike("username", `%${query}%`)
+            .neq("id", currentUser.id)
+            .limit(20);
 
 
     if (error) {
@@ -349,62 +499,186 @@ async function loadMessages() {
     }
 
 
+    searchResults.innerHTML = "";
+
+
+    if (!data || data.length === 0) {
+
+        searchResults.innerHTML =
+            `<div style="padding:10px;color:#555;font-size:11px;">
+                Aucun utilisateur trouvé.
+            </div>`;
+
+        return;
+    }
+
+
+    data.forEach(user => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "user-result";
+
+
+        item.innerHTML = `
+            <div class="avatar">
+                ${escapeHTML(
+                    user.username
+                        .charAt(0)
+                        .toUpperCase()
+                )}
+            </div>
+
+            <div>
+                <div class="user-result-name">
+                    ${escapeHTML(user.username)}
+                </div>
+
+                <span class="user-result-status">
+                    Utilisateur MonChat
+                </span>
+            </div>
+        `;
+
+
+        item.addEventListener(
+            "click",
+            () => openConversation(user)
+        );
+
+
+        searchResults.appendChild(item);
+    });
+}
+
+
+/* =====================================================
+   OUVRIR CONVERSATION
+   ===================================================== */
+
+async function openConversation(user) {
+
+    selectedUser = user;
+
+
+    chatTitle.textContent =
+        user.username;
+
+
+    chatStatus.textContent =
+        "🟢 Conversation privée";
+
+
+    messageInput.disabled = false;
+
+    sendButton.disabled = false;
+
+    messageInput.placeholder =
+        `Écris à ${user.username}...`;
+
+
+    searchResults.innerHTML = "";
+
+    userSearch.value = "";
+
+
+    await loadPrivateMessages();
+
+
+    subscribeToPrivateMessages();
+
+
+    await loadConversations();
+}
+
+
+/* =====================================================
+   CHARGER MESSAGES PRIVÉS
+   ===================================================== */
+
+async function loadPrivateMessages() {
+
+    if (!currentUser || !selectedUser) {
+        return;
+    }
+
+
     messagesContainer.innerHTML = "";
 
 
-    for (const message of data) {
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("private_messages")
+            .select("*")
+            .or(
+                `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`
+            )
+            .order("created_at", {
+                ascending: true
+            });
 
-        await displayMessage(message);
+
+    if (error) {
+
+        console.error(error);
+
+        return;
     }
+
+
+    if (!data || data.length === 0) {
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "empty-chat";
+
+        empty.innerHTML = `
+            <div class="empty-icon">👋</div>
+            <h3>Nouvelle conversation</h3>
+            <p>Envoie ton premier message à ${escapeHTML(selectedUser.username)}.</p>
+        `;
+
+        messagesContainer.appendChild(empty);
+
+        return;
+    }
+
+
+    data.forEach(message => {
+
+        displayPrivateMessage(message);
+    });
 
 
     scrollMessages();
 }
 
 
-/* =========================
-   AFFICHER UN MESSAGE
-   ========================= */
+/* =====================================================
+   AFFICHER MESSAGE PRIVÉ
+   ===================================================== */
 
-async function displayMessage(message) {
-
-    const {
-        data: profile
-    } = await supabaseClient
-        .from("profiles")
-        .select("username")
-        .eq("id", message.username)
-        .maybeSingle();
-
-
-    let username =
-        message.username;
-
-
-    if (profile) {
-        username = profile.username;
-    }
-
-
-    const {
-        data: {
-            user
-        }
-    } = await supabaseClient.auth.getUser();
-
+function displayPrivateMessage(message) {
 
     const div =
         document.createElement("div");
 
 
     div.className =
-        "message";
+        "private-message";
 
 
     if (
-        user &&
-        message.username === user.id
+        message.sender_id === currentUser.id
     ) {
+
         div.classList.add("me");
     }
 
@@ -414,57 +688,186 @@ async function displayMessage(message) {
 
 
     bubble.className =
-        "message-bubble";
+        "private-bubble";
 
 
-    bubble.innerHTML =
-        `<strong>${escapeHTML(username)}</strong><br>${escapeHTML(message.content)}`;
+    bubble.textContent =
+        message.content;
 
 
     div.appendChild(bubble);
+
 
     messagesContainer.appendChild(div);
 }
 
 
-/* =========================
-   ENVOYER MESSAGE
-   ========================= */
+/* =====================================================
+   ENVOYER MESSAGE PRIVÉ
+   ===================================================== */
 
-messageForm.addEventListener("submit", async (event) => {
+messageForm.addEventListener(
+    "submit",
+    async event => {
 
-    event.preventDefault();
-
-
-    const content =
-        messageInput.value.trim();
+        event.preventDefault();
 
 
-    if (!content) {
-        return;
-    }
-
-
-    const {
-        data: {
-            user
+        if (
+            !currentUser ||
+            !selectedUser
+        ) {
+            return;
         }
-    } = await supabaseClient.auth.getUser();
 
 
-    if (!user) {
+        const content =
+            messageInput.value.trim();
+
+
+        if (!content) {
+            return;
+        }
+
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("private_messages")
+                .insert({
+                    sender_id:
+                        currentUser.id,
+
+                    receiver_id:
+                        selectedUser.id,
+
+                    content
+                });
+
+
+        if (error) {
+
+            console.error(error);
+
+            return;
+        }
+
+
+        messageInput.value = "";
+
+        messageInput.focus();
+    }
+);
+
+
+/* =====================================================
+   REALTIME MESSAGES PRIVÉS
+   ===================================================== */
+
+function subscribeToPrivateMessages() {
+
+    if (realtimeChannel) {
+
+        supabaseClient
+            .removeChannel(
+                realtimeChannel
+            );
+    }
+
+
+    realtimeChannel =
+        supabaseClient
+            .channel(
+                `private-chat-${currentUser.id}`
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "private_messages"
+                },
+                payload => {
+
+                    const message =
+                        payload.new;
+
+
+                    const belongsToConversation =
+                        (
+                            message.sender_id === currentUser.id &&
+                            message.receiver_id === selectedUser.id
+                        )
+                        ||
+                        (
+                            message.sender_id === selectedUser.id &&
+                            message.receiver_id === currentUser.id
+                        );
+
+
+                    if (
+                        belongsToConversation
+                    ) {
+
+                        const existingEmpty =
+                            messagesContainer
+                                .querySelector(".empty-chat");
+
+
+                        if (existingEmpty) {
+                            existingEmpty.remove();
+                        }
+
+
+                        displayPrivateMessage(
+                            message
+                        );
+
+
+                        scrollMessages();
+                    }
+
+
+                    loadConversations();
+                }
+            )
+            .subscribe();
+}
+
+
+/* =====================================================
+   CONVERSATIONS
+   ===================================================== */
+
+async function loadConversations() {
+
+    if (!currentUser) {
         return;
     }
 
 
+    conversations.innerHTML = "";
+
+
     const {
+        data,
         error
-    } = await supabaseClient
-        .from("messages")
-        .insert({
-            username: user.id,
-            content: content
-        });
+    } =
+        await supabaseClient
+            .from("private_messages")
+            .select(
+                "sender_id, receiver_id, created_at"
+            )
+            .or(
+                `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
 
     if (error) {
@@ -475,38 +878,114 @@ messageForm.addEventListener("submit", async (event) => {
     }
 
 
-    messageInput.value = "";
-});
+    const userIds = [];
 
 
-/* =========================
-   REALTIME
-   ========================= */
+    data.forEach(message => {
 
-supabaseClient
-    .channel("messages-channel")
-    .on(
-        "postgres_changes",
-        {
-            event: "INSERT",
-            schema: "public",
-            table: "messages"
-        },
-        async (payload) => {
+        const otherId =
+            message.sender_id === currentUser.id
+                ? message.receiver_id
+                : message.sender_id;
 
-            await displayMessage(
-                payload.new
+
+        if (
+            !userIds.includes(otherId)
+        ) {
+
+            userIds.push(otherId);
+        }
+    });
+
+
+    if (userIds.length === 0) {
+
+        conversations.innerHTML =
+            `<div style="padding:10px;color:#555;font-size:11px;">
+                Aucune conversation.
+            </div>`;
+
+        return;
+    }
+
+
+    const {
+        data: profiles,
+        error: profilesError
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, username")
+            .in("id", userIds);
+
+
+    if (profilesError) {
+
+        console.error(profilesError);
+
+        return;
+    }
+
+
+    userIds.forEach(id => {
+
+        const profile =
+            profiles.find(
+                p => p.id === id
             );
 
-            scrollMessages();
+
+        if (!profile) {
+            return;
         }
-    )
-    .subscribe();
 
 
-/* =========================
+        const item =
+            document.createElement("div");
+
+
+        item.className =
+            "conversation";
+
+
+        if (
+            selectedUser &&
+            selectedUser.id === profile.id
+        ) {
+
+            item.classList.add("active");
+        }
+
+
+        item.innerHTML = `
+            <div class="avatar">
+                ${escapeHTML(
+                    profile.username
+                        .charAt(0)
+                        .toUpperCase()
+                )}
+            </div>
+
+            <div class="conversation-name">
+                ${escapeHTML(profile.username)}
+            </div>
+        `;
+
+
+        item.addEventListener(
+            "click",
+            () => openConversation(profile)
+        );
+
+
+        conversations.appendChild(item);
+    });
+}
+
+
+/* =====================================================
    SCROLL
-   ========================= */
+   ===================================================== */
 
 function scrollMessages() {
 
@@ -515,9 +994,9 @@ function scrollMessages() {
 }
 
 
-/* =========================
-   SECURITE HTML
-   ========================= */
+/* =====================================================
+   SECURITE
+   ===================================================== */
 
 function escapeHTML(text) {
 
@@ -530,9 +1009,9 @@ function escapeHTML(text) {
 }
 
 
-/* =========================
-   PARTICULES ANIMÉES
-   ========================= */
+/* =====================================================
+   PARTICULES CYBERPUNK
+   ===================================================== */
 
 const canvas =
     document.getElementById("particles");
@@ -553,11 +1032,18 @@ if (canvas) {
             canvas.parentElement.getBoundingClientRect();
 
 
+        const dpr =
+            Math.min(
+                window.devicePixelRatio || 1,
+                2
+            );
+
+
         canvas.width =
-            rect.width * window.devicePixelRatio;
+            rect.width * dpr;
 
         canvas.height =
-            rect.height * window.devicePixelRatio;
+            rect.height * dpr;
 
 
         canvas.style.width =
@@ -568,10 +1054,10 @@ if (canvas) {
 
 
         ctx.setTransform(
-            window.devicePixelRatio,
+            dpr,
             0,
             0,
-            window.devicePixelRatio,
+            dpr,
             0,
             0
         );
@@ -604,9 +1090,11 @@ if (canvas) {
 
             particles.push({
 
-                x: Math.random() * width,
+                x:
+                    Math.random() * width,
 
-                y: Math.random() * height,
+                y:
+                    Math.random() * height,
 
                 size:
                     Math.random() * 1.7 + 0.6,
@@ -638,11 +1126,18 @@ if (canvas) {
         );
 
 
-        /* Points */
+        for (
+            let i = 0;
+            i < particles.length;
+            i++
+        ) {
 
-        for (const p of particles) {
+            const p =
+                particles[i];
+
 
             p.x += p.speedX;
+
             p.y += p.speedY;
 
 
@@ -651,7 +1146,6 @@ if (canvas) {
 
             if (p.x > width)
                 p.x = 0;
-
 
             if (p.y < 0)
                 p.y = height;
@@ -672,15 +1166,17 @@ if (canvas) {
 
 
             ctx.fillStyle =
-                "rgba(150, 170, 255, 0.75)";
+                "rgba(255,255,255,0.75)";
 
             ctx.fill();
         }
 
 
-        /* Lignes entre les points */
-
-        for (let i = 0; i < particles.length; i++) {
+        for (
+            let i = 0;
+            i < particles.length;
+            i++
+        ) {
 
             for (
                 let j = i + 1;
@@ -712,7 +1208,8 @@ if (canvas) {
                 if (distance < 120) {
 
                     const opacity =
-                        (1 - distance / 120) * 0.18;
+                        (1 - distance / 120)
+                        * 0.18;
 
 
                     ctx.beginPath();
@@ -729,7 +1226,7 @@ if (canvas) {
 
 
                     ctx.strokeStyle =
-                        `rgba(120, 140, 255, ${opacity})`;
+                        `rgba(255,255,255,${opacity})`;
 
                     ctx.lineWidth = 1;
 

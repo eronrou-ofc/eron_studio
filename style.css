@@ -930,3 +930,304 @@ body {
         padding: 12px;
     }
 }
+/* =====================================================
+   RECHERCHE UTILISATEURS
+   ===================================================== */
+
+.search-box {
+    display: flex;
+    align-items: center;
+
+    height: 45px;
+
+    padding: 0 13px;
+
+    margin-bottom: 10px;
+
+    background: #0d0d0d;
+
+    border: 1px solid #242424;
+
+    border-radius: 9px;
+
+    transition: 0.2s;
+}
+
+.search-box:focus-within {
+    border-color: #aaa;
+
+    box-shadow:
+        0 0 12px rgba(255,255,255,0.05);
+}
+
+.search-box span {
+    color: #777;
+
+    font-size: 22px;
+
+    margin-right: 8px;
+}
+
+.search-box input {
+    width: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 12px;
+}
+
+.search-box input::placeholder {
+    color: #555;
+}
+
+
+/* =====================================================
+   RESULTATS
+   ===================================================== */
+
+.search-results {
+    max-height: 190px;
+
+    overflow-y: auto;
+
+    margin-bottom: 20px;
+}
+
+.user-result {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 9px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: 0.15s;
+}
+
+.user-result:hover {
+    background: #181818;
+}
+
+.user-result .avatar {
+    width: 34px;
+    height: 34px;
+
+    font-size: 12px;
+}
+
+.user-result-name {
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.user-result-status {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #555;
+
+    font-size: 9px;
+}
+
+
+/* =====================================================
+   CONVERSATIONS
+   ===================================================== */
+
+.conversations {
+    max-height: calc(100vh - 430px);
+
+    overflow-y: auto;
+}
+
+.conversation {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px;
+
+    margin-bottom: 4px;
+
+    border-radius: 9px;
+
+    cursor: pointer;
+}
+
+.conversation:hover {
+    background: #151515;
+}
+
+.conversation.active {
+    background: #191919;
+
+    border-left: 2px solid white;
+}
+
+.conversation .avatar {
+    width: 36px;
+    height: 36px;
+
+    font-size: 12px;
+}
+
+.conversation-name {
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+
+/* =====================================================
+   DECONNEXION
+   ===================================================== */
+
+.logout-button {
+    width: 100%;
+
+    height: 42px;
+
+    margin-top: 15px;
+
+    border: 1px solid #292929;
+
+    border-radius: 9px;
+
+    background: #0d0d0d;
+
+    color: #aaa;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    transition: 0.2s;
+}
+
+.logout-button:hover {
+    background: #fff;
+
+    color: #000;
+
+    border-color: white;
+}
+
+
+/* =====================================================
+   CHAT VIDE
+   ===================================================== */
+
+.empty-chat {
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 50px;
+
+    margin-bottom: 15px;
+
+    filter: grayscale(1);
+
+    opacity: 0.6;
+}
+
+.empty-chat h3 {
+    color: #aaa;
+
+    margin-bottom: 8px;
+}
+
+.empty-chat p {
+    font-size: 12px;
+}
+
+
+/* =====================================================
+   MESSAGE PRIVE
+   ===================================================== */
+
+.private-message {
+    display: flex;
+
+    margin-bottom: 12px;
+}
+
+.private-message.me {
+    justify-content: flex-end;
+}
+
+.private-bubble {
+    max-width: 65%;
+
+    padding: 10px 14px;
+
+    border-radius: 10px;
+
+    background: #151515;
+
+    border: 1px solid #292929;
+
+    color: #eee;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+.private-message.me .private-bubble {
+    background: white;
+
+    color: black;
+
+    border-color: white;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .sidebar {
+        width: 230px;
+    }
+
+    .chat-header {
+        padding: 0 15px;
+    }
+
+    .input-area {
+        padding: 10px;
+    }
+
+    .private-bubble {
+        max-width: 80%;
+    }
+}
