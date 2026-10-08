@@ -1,6 +1,7 @@
-
+```html
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,9 +13,62 @@
 
 <body>
 
-    <div class="app">
+    <!-- ========================= -->
+    <!-- CONNEXION / INSCRIPTION -->
+    <!-- ========================= -->
 
-        <!-- Barre latérale -->
+    <div id="authScreen" class="auth-screen">
+
+        <div class="auth-box">
+
+            <h1>💬 MonChat</h1>
+
+            <p id="authTitle">Connexion</p>
+
+            <form id="authForm">
+
+                <input
+                    type="email"
+                    id="emailInput"
+                    placeholder="Adresse email"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="passwordInput"
+                    placeholder="Mot de passe"
+                    required
+                    minlength="6"
+                >
+
+                <button type="submit" id="authButton">
+                    Se connecter
+                </button>
+
+            </form>
+
+            <p id="authMessage"></p>
+
+            <button
+                type="button"
+                id="switchAuth"
+                class="switch-auth"
+            >
+                Créer un compte
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- APPLICATION -->
+    <!-- ========================= -->
+
+    <div class="app" id="chatApp" style="display:none;">
+
         <aside class="sidebar">
 
             <div class="logo">
@@ -23,12 +77,19 @@
             </div>
 
             <div class="profile">
-                <div class="avatar">A</div>
+
+                <div class="avatar" id="userAvatar">
+                    A
+                </div>
 
                 <div>
-                    <strong>Adrien</strong>
+                    <strong id="usernameDisplay">
+                        Utilisateur
+                    </strong>
+
                     <small>🟢 En ligne</small>
                 </div>
+
             </div>
 
             <button class="new-chat">
@@ -46,21 +107,15 @@
                 </div>
 
                 <div class="chat-info">
-                    <strong>Groupe général</strong>
-                    <small>Bienvenue sur MonChat !</small>
-                </div>
 
-            </div>
+                    <strong>
+                        Groupe général
+                    </strong>
 
-            <div class="chat">
+                    <small>
+                        Discussion générale
+                    </small>
 
-                <div class="avatar purple">
-                    D
-                </div>
-
-                <div class="chat-info">
-                    <strong>Discussion</strong>
-                    <small>Aucun message</small>
                 </div>
 
             </div>
@@ -68,14 +123,20 @@
         </aside>
 
 
-        <!-- Zone principale -->
         <main class="chat-area">
 
             <header class="chat-header">
 
                 <div>
-                    <h2>Groupe général</h2>
-                    <span>🟢 En ligne</span>
+
+                    <h2>
+                        Groupe général
+                    </h2>
+
+                    <span>
+                        🟢 En ligne
+                    </span>
+
                 </div>
 
                 <button class="menu-button">
@@ -85,18 +146,13 @@
             </header>
 
 
-            <!-- Messages -->
             <section
                 class="messages"
                 id="messages"
             >
-
-                <!-- Les messages seront chargés par JavaScript -->
-
             </section>
 
 
-            <!-- Barre d'écriture -->
             <form
                 class="input-area"
                 id="messageForm"
@@ -137,12 +193,15 @@
     </div>
 
 
-    <!-- Supabase : UNE SEULE FOIS -->
+    <!-- SUPABASE -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Notre JavaScript -->
+    <!-- JAVASCRIPT -->
+
     <script src="script.js"></script>
 
 </body>
+
 </html>
 ```
