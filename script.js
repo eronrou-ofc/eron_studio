@@ -873,6 +873,13 @@ checkSession();
    MONCHAT — NAVIGATION MOBILE
    ========================================= */
 
+/* Supprimer les boutons Nouvelle discussion en double */
+document.querySelectorAll("#newDiscussionButton").forEach((button, index) => {
+    if (index > 0) {
+        button.remove();
+    }
+});
+
 (function setupMobileNavigation() {
     const app = document.getElementById("chatApp");
     const newDiscussionButton =
