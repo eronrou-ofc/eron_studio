@@ -873,13 +873,26 @@ checkSession();
    MONCHAT — NAVIGATION MOBILE
    ========================================= */
 
-/* Supprimer les boutons Nouvelle discussion en double */
-document.querySelectorAll("#newDiscussionButton").forEach((button, index) => {
-    if (index > 0) {
-        button.remove();
-    }
+
+/* MONCHAT — GARANTIR UN SEUL BOUTON */
+function removeDuplicateNewChatButtons() {
+    const buttons = document.querySelectorAll("#newDiscussionButton");
+
+    buttons.forEach((button, index) => {
+        if (index > 0) button.remove();
+    });
+}
+
+removeDuplicateNewChatButtons();
+
+const duplicateButtonObserver = new MutationObserver(() => {
+    removeDuplicateNewChatButtons();
 });
 
+duplicateButtonObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
 (function setupMobileNavigation() {
     const app = document.getElementById("chatApp");
     const newDiscussionButton =
