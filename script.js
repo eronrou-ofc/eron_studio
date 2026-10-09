@@ -867,3 +867,165 @@ if (canvas) {
    ========================================= */
 
 checkSession();
+
+/* =========================================
+   MONCHAT — NOUVELLE DISCUSSION MOBILE
+   ========================================= */
+
+(function setupMobileNewChat() {
+    const conversationList = document.getElementById("conversations");
+    const searchInput = document.getElementById("userSearch");
+    const app = document.getElementById("chatApp");
+    const messageList = document.getElementById("messages");
+
+    if (!conversationList || !searchInput || !app || !messageList) {
+        console.warn("MonChat : éléments nécessaires au mode mobile introuvables.");
+        return;
+    }
+
+    // Créer le bouton sans modifier le HTML existant.
+    const newChatButton = document.createElement("button");
+    newChatButton.id = "newDiscussionButton";
+    newChatButton.type = "button";
+    newChatButton.textContent = "+ Nouvelle discussion";
+    newChatButton.setAttribute("aria-label", "Démarrer une nouvelle discussion");
+
+    conversationList.parentElement.insertBefore(
+        newChatButton,
+        conversationList
+    );
+
+    // Repérer les zones de navigation existantes.
+    const sidebar = conversationList.closest(
+        ".sidebar, .chat-sidebar, .conversations-sidebar"
+    );
+
+    const chatPanel = messageList.closest(
+        ".chat-main, .chat-panel, .chat-area, .chat-window"
+    );
+
+    if (sidebar) sidebar.classList.add("mobile-sidebar");
+    if (chatPanel) chatPanel.classList.add("mobile-chat-panel");
+
+    // Afficher la recherche pour trouver un utilisateur.
+    newChatButton.addEventListener("click", () => {
+        searchInput.classList.add("mobile-search-visible");
+        searchInput.focus();
+
+        if (window.matchMedia("(max-width: 700px)").matches) {
+            app.classList.remove("mobile-chat-open");
+        }
+    });
+
+    // En ouvrant une conversation, afficher le chat sur téléphone.
+    const originalOpenConversation = window.openConversation;
+
+    // La fonction originale n'est pas exposée globalement dans tous
+    // les scripts : on utilise donc un observateur de classe ci-dessous.
+    const observer = new MutationObserver(() => {
+        const title = document.getElementById("chatTitle");
+
+        if (
+            title &&
+            title.textContent.trim() &&
+            title.textContent !== "Sélectionne une conversation"
+        ) {
+            if (window.matchMedia("(max-width: 700px)").matches) {
+                app.classList.add("mobile-chat-open");
+            }
+        }
+    });
+
+    observer.observe(document.getElementById("chatTitle") || app, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
+
+    // Ajouter un bouton Retour au-dessus des messages.
+    if (chatPanel && !document.getElementById("mobileBackButton")) {
+        const backButton = document.createElement("button");
+        backButton.id = "mobileBackButton";
+        backButton.type = "button";
+        backButton.textContent = "← Retour aux discussions";
+
+        chatPanel.insertBefore(backButton, chatPanel.firstChild);
+
+        backButton.addEventListener("click", () => {
+            app.classList.remove("mobile-chat-open");
+        });
+    }
+})();
+
+/* =========================================
+   NAVIGATION MOBILE MONCHAT
+   ========================================= */
+
+(function setupMobileNavigation() {
+    const app = document.getElementById("chatApp");
+    const newDiscussionButton =
+        document.getElementById("newDiscussionButton");
+    const backButton =
+        document.getElementById("backToConversations");
+    const searchInput =
+        document.getElementById("userSearch");
+    const searchResults =
+        document.getElementById("searchResults");
+    const chatTitle =
+        document.getElementById("chatTitle");
+
+    if (
+        !app ||
+        !newDiscussionButton ||
+        !backButton ||
+        !searchInput ||
+        !searchResults
+    ) {
+        console.error("Navigation mobile : élément HTML manquant.");
+        return;
+    }
+
+    const isMobile = () =>
+        window.matchMedia("(max-width: 700px)").matches;
+
+    // Bouton Nouvelle discussion : ouvre la recherche.
+    newDiscussionButton.addEventListener("click", () => {
+        searchInput.focus();
+        searchInput.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    });
+
+    // Le bouton Retour ramène à la liste des conversations.
+    backButton.addEventListener("click", () => {
+        app.classList.remove("mobile-chat-open");
+    });
+
+    // Sur mobile, afficher le chat dès qu'un résultat est choisi.
+    // L'écouteur fonctionne avec les résultats créés dynamiquement.
+    searchResults.addEventListener("click", (event) => {
+        if (event.target.closest(".user-result") && isMobile()) {
+            app.classList.add("mobile-chat-open");
+        }
+    });
+
+    // Sur ordinateur, ne pas conserver la vue mobile.
+    window.addEventListener("resize", () => {
+        if (!isMobile()) {
+            app.classList.remove("mobile-chat-open");
+        }
+    });
+
+    // Quand une conversation est choisie dans la liste,
+    // passer au chat sur téléphone.
+    document.getElementById("conversations")
+        ?.addEventListener("click", (event) => {
+            if (
+                event.target.closest(".conversation") &&
+                isMobile()
+            ) {
+                app.classList.add("mobile-chat-open");
+            }
+        });
+})();

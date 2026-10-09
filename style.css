@@ -1363,3 +1363,224 @@ body {
         height: 42px;
     }
 }
+
+/* =========================================
+   MONCHAT — AFFICHAGE TÉLÉPHONE PORTRAIT
+   ========================================= */
+
+#newDiscussionButton {
+    display: block;
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 13px 12px;
+    border: 1px solid #333;
+    border-radius: 12px;
+    background: #fff;
+    color: #111;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+#newDiscussionButton:hover {
+    background: #eaeaea;
+}
+
+#mobileBackButton {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    #chatApp {
+        width: 100%;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        flex-direction: column;
+    }
+
+    #newDiscussionButton {
+        width: calc(100% - 20px);
+        margin: 10px;
+        flex-shrink: 0;
+        min-height: 46px;
+    }
+
+    #userSearch {
+        width: calc(100% - 20px);
+        margin: 0 10px 10px;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+
+    #userSearch.mobile-search-visible {
+        display: block;
+    }
+
+    #conversations {
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    #messages {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 12px;
+    }
+
+    #messageForm {
+        flex-shrink: 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    #messageInput {
+        min-width: 0;
+        font-size: 16px;
+    }
+
+    #mobileBackButton {
+        display: block;
+        width: 100%;
+        flex-shrink: 0;
+        padding: 12px;
+        border: none;
+        border-bottom: 1px solid #333;
+        background: #151515;
+        color: white;
+        text-align: left;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    #chatApp.mobile-chat-open .mobile-sidebar {
+        display: none !important;
+    }
+
+    #chatApp.mobile-chat-open .mobile-chat-panel {
+        display: flex !important;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+    }
+
+    #chatApp:not(.mobile-chat-open) .mobile-chat-panel {
+        display: none !important;
+    }
+}
+
+/* =========================================
+   NOUVELLE DISCUSSION
+   ========================================= */
+
+.new-discussion-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 24px);
+    margin: 10px 12px;
+    padding: 13px;
+    border: 1px solid #383838;
+    border-radius: 12px;
+    background: #fff;
+    color: #111;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.new-discussion-button span {
+    font-size: 20px;
+}
+
+.new-discussion-button:hover {
+    background: #e5e5e5;
+}
+
+@media (max-width: 700px) {
+    #chatApp {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #chatApp .sidebar {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        flex: 1;
+        box-sizing: border-box;
+    }
+
+    #chatApp .chat-area {
+        display: none;
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+    }
+
+    #chatApp.mobile-chat-open .sidebar {
+        display: none;
+    }
+
+    #chatApp.mobile-chat-open .chat-area {
+        display: flex;
+    }
+
+    #chatApp .messages {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #chatApp .chat-header {
+        flex-shrink: 0;
+    }
+
+    #chatApp .input-area {
+        flex-shrink: 0;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    #chatApp .back-button {
+        display: flex;
+    }
+
+    #chatApp .search-box input,
+    #chatApp #messageInput {
+        font-size: 16px;
+    }
+
+    #chatApp .conversations {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    #chatApp .search-results {
+        max-height: 30vh;
+        overflow-y: auto;
+    }
+
+    #chatApp .logout-button {
+        flex-shrink: 0;
+    }
+}
+
+/* Sur ordinateur, la navigation habituelle est conservée. */
+@media (min-width: 701px) {
+    #chatApp .back-button {
+        display: none;
+    }
+}
