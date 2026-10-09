@@ -1,8 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080808">
+    <meta name="description" content="MonChat, ta messagerie privée.">
     <title>MonChat</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,11 +14,9 @@
 
     <!-- CONNEXION -->
     <div id="authScreen" class="auth-screen">
-
         <canvas id="particles"></canvas>
 
         <div class="auth-card">
-
             <div class="auth-logo">💬</div>
 
             <h1>MonChat</h1>
@@ -25,7 +26,6 @@
             </p>
 
             <form id="authForm">
-
                 <div class="input-box">
                     <span>👤</span>
                     <input
@@ -54,29 +54,24 @@
                 <button type="submit" id="authButton" class="auth-button">
                     Se connecter
                 </button>
-
             </form>
 
             <p id="authMessage" class="auth-message"></p>
 
             <div class="auth-switch">
-                <span id="switchText">
-                    Pas encore de compte ?
-                </span>
+                <span id="switchText">Pas encore de compte ?</span>
 
                 <button type="button" id="switchAuth">
                     Créer un compte
                 </button>
             </div>
-
         </div>
     </div>
-
 
     <!-- APPLICATION -->
     <div class="app" id="chatApp" style="display:none;">
 
-        <!-- SIDEBAR -->
+        <!-- LISTE DES CONVERSATIONS -->
         <aside class="sidebar">
 
             <div class="logo">
@@ -84,32 +79,18 @@
                 <span>MONCHAT</span>
             </div>
 
-
             <!-- PROFIL -->
             <div class="profile">
-
-                <div class="avatar" id="userAvatar">
-                    A
-                </div>
+                <div class="avatar" id="userAvatar">A</div>
 
                 <div class="profile-info">
-
-                    <strong id="usernameDisplay">
-                        Utilisateur
-                    </strong>
-
-                    <small>
-                        🟢 En ligne
-                    </small>
-
+                    <strong id="usernameDisplay">Utilisateur</strong>
+                    <small>🟢 En ligne</small>
                 </div>
-
             </div>
-
 
             <!-- RECHERCHE -->
             <div class="search-box">
-
                 <span>⌕</span>
 
                 <input
@@ -118,30 +99,19 @@
                     placeholder="Rechercher un utilisateur..."
                     autocomplete="off"
                 >
-
             </div>
 
-
-            <!-- RESULTATS -->
-            <div
-                class="search-results"
-                id="searchResults"
-            ></div>
-
+            <!-- RÉSULTATS DE RECHERCHE -->
+            <div class="search-results" id="searchResults"></div>
 
             <!-- DISCUSSIONS -->
-            <div class="section-title">
-                DISCUSSIONS
-            </div>
+            <div class="section-title">DISCUSSIONS</div>
 
-            <div
-                class="conversations"
-                id="conversations"
-            ></div>
+            <div class="conversations" id="conversations"></div>
 
-
-            <!-- DECONNEXION -->
+            <!-- DÉCONNEXION -->
             <button
+                type="button"
                 class="logout-button"
                 id="logoutButton"
             >
@@ -150,66 +120,52 @@
 
         </aside>
 
-
-        <!-- CHAT -->
+        <!-- ZONE DE DISCUSSION -->
         <main class="chat-area">
 
+            <!-- UN SEUL EN-TÊTE -->
             <header class="chat-header">
 
-                <div>
+                <button
+                    type="button"
+                    class="back-button"
+                    id="backToConversations"
+                    aria-label="Retour aux conversations"
+                    title="Retour aux conversations"
+                >←</button>
 
-                    <h2 id="chatTitle">
-                        Sélectionne une conversation
-                    </h2>
-
-                    <span id="chatStatus">
-                        Aucun utilisateur sélectionné
-                    </span>
-
+                <div class="chat-heading">
+                    <h2 id="chatTitle">Sélectionne une conversation</h2>
+                    <span id="chatStatus">Aucun utilisateur sélectionné</span>
                 </div>
 
-                <button class="menu-button">
-                    ⋮
-                </button>
+                <button
+                    type="button"
+                    class="menu-button"
+                    aria-label="Options"
+                >⋮</button>
 
             </header>
 
-
             <!-- MESSAGES -->
-            <section
-                class="messages"
-                id="messages"
-            >
+            <section class="messages" id="messages">
 
                 <div class="empty-chat" id="emptyChat">
+                    <div class="empty-icon">💬</div>
 
-                    <div class="empty-icon">
-                        💬
-                    </div>
-
-                    <h3>
-                        Tes conversations
-                    </h3>
+                    <h3>Tes conversations</h3>
 
                     <p>
                         Recherche un utilisateur pour commencer à discuter.
                     </p>
-
                 </div>
 
             </section>
 
+            <!-- ENVOI DE MESSAGES -->
+            <form class="input-area" id="messageForm">
 
-            <!-- ENVOI -->
-            <form
-                class="input-area"
-                id="messageForm"
-            >
-
-                <button
-                    type="button"
-                    class="attach"
-                >
+                <button type="button" class="attach" aria-label="Pièce jointe">
                     ＋
                 </button>
 
@@ -221,27 +177,18 @@
                     disabled
                 >
 
-                <button
-                    type="button"
-                    class="emoji"
-                >
+                <button type="button" class="emoji" aria-label="Emoji">
                     😊
                 </button>
 
-                <button
-                    type="submit"
-                    class="send"
-                    disabled
-                >
+                <button type="submit" class="send" aria-label="Envoyer" disabled>
                     ➤
                 </button>
 
             </form>
 
         </main>
-
     </div>
-
 
     <!-- SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

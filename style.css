@@ -1231,3 +1231,135 @@ body {
         max-width: 80%;
     }
 }
+
+/* =====================================
+   MONCHAT MOBILE — ANDROID / IPHONE
+   ===================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        overflow: hidden;
+    }
+
+    /* Connexion */
+    .auth-screen {
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 18px;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 400px;
+        padding: 32px 22px;
+        border-radius: 16px;
+    }
+
+    /* Application */
+    .app {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-width: 0;
+    }
+
+    /* La liste des discussions devient un écran dédié */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 18px 14px;
+        border-right: none;
+    }
+
+    .logo {
+        margin-bottom: 20px;
+    }
+
+    .profile {
+        margin-bottom: 14px;
+    }
+
+    .search-box {
+        min-height: 46px;
+    }
+
+    .search-results {
+        max-height: 180px;
+    }
+
+    .conversations {
+        flex: 1;
+        min-height: 80px;
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .logout-button {
+        flex-shrink: 0;
+        margin-top: 10px;
+    }
+
+    /* Par défaut, afficher la liste des discussions */
+    .chat-area {
+        display: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Quand une conversation est ouverte */
+    .app.mobile-chat-open .sidebar {
+        display: none;
+    }
+
+    .app.mobile-chat-open .chat-area {
+        display: flex;
+    }
+
+    .chat-header {
+        flex-shrink: 0;
+        height: 68px;
+        padding: 0 14px;
+        gap: 8px;
+    }
+
+    .chat-header h2 {
+        font-size: 15px;
+    }
+
+    .messages {
+        min-height: 0;
+        padding: 16px 12px;
+    }
+
+    .private-bubble,
+    .message-bubble {
+        max-width: 85%;
+        overflow-wrap: anywhere;
+    }
+
+    .input-area {
+        flex-shrink: 0;
+        gap: 7px;
+        padding: 10px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .input-area input {
+        min-width: 0;
+        height: 44px;
+        padding: 0 10px;
+        font-size: 16px;
+    }
+
+    .attach,
+    .emoji,
+    .send {
+        flex-shrink: 0;
+        width: 39px;
+        height: 42px;
+    }
+}
