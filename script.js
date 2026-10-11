@@ -307,6 +307,9 @@ async function showChat() {
         authScreen.style.display = "none";
         chatApp.style.display = "flex";
 
+        setupCallUI();
+        await setupCallSignaling();
+
         await loadConversations();
     } catch (error) {
         setAuthMessage(showError(error, "Chargement du profil"));
@@ -328,6 +331,19 @@ logoutButton.addEventListener("click", async () => {
         if (realtimeChannel) {
             await supabaseClient.removeChannel(realtimeChannel);
             realtimeChannel = null;
+        }
+        if (callState.status !== "idle") await finishCall(false);
+        if (callSignalChannel) {
+            await supabaseClient.removeChannel(callSignalChannel);
+            callSignalChannel = null;
+        }
+
+        if (typeof callState !== "undefined" && callState.status !== "idle") {
+            await finishCall(true, "Appel terminé.");
+        }
+        if (typeof callSignalChannel !== "undefined" && callSignalChannel) {
+            await supabaseClient.removeChannel(callSignalChannel);
+            callSignalChannel = null;
         }
 
         const { error } = await supabaseClient.auth.signOut();
@@ -454,6 +470,8 @@ async function openConversation(user) {
 
     chatTitle.textContent = user.username;
     chatStatus.textContent = "🟢 Conversation privée";
+    setupCallUI();
+    refreshCallButtons();
 
     messageInput.disabled = false;
     sendButton.disabled = false;
@@ -861,6 +879,386 @@ if (canvas) {
         });
     }
 }
+
+
+
+/* =========================================
+   MONCHAT — APPELS AUDIO / VIDÉO (WebRTC)
+   Nécessite la table call_signals décrite dans le SQL fourni.
+   ========================================= */
+
+let callUIReady = false;
+let callSignalChannel = null;
+let callState = {
+    status: "idle", // idle | outgoing | incoming | connecting | active
+    callId: null,
+    peer: null,
+    type: "audio",
+    pc: null,
+    localStream: null,
+    remoteStream: null,
+    pendingIce: [],
+    micEnabled: true,
+    cameraEnabled: true
+};
+
+function setupCallUI() {
+    const header = document.querySelector(".chat-header");
+    if (!header) return;
+
+    if (!callUIReady) {
+        const style = document.createElement("style");
+        style.id = "monchat-call-styles";
+        style.textContent = `
+          .monchat-call-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+          .monchat-call-button{width:40px;height:40px;border:1px solid #303030;border-radius:12px;background:#171717;color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+          .monchat-call-button:hover{background:#292929}
+          .monchat-call-button:disabled{opacity:.35;cursor:not-allowed}
+          .monchat-call-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:16px}
+          .monchat-call-panel{width:min(620px,100%);background:#111;border:1px solid #303030;border-radius:22px;padding:20px;color:#fff;box-shadow:0 20px 80px #0009;font-family:inherit}
+          .monchat-call-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+          .monchat-call-title{font-size:20px;font-weight:700}.monchat-call-status{font-size:13px;color:#aaa;margin-top:5px}
+          .monchat-call-videos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+          .monchat-call-videos video{width:100%;aspect-ratio:4/3;background:#050505;object-fit:cover;border-radius:14px}
+          .monchat-call-videos.audio-mode{display:none}
+          .monchat-call-avatar{display:flex;align-items:center;justify-content:center;min-height:190px;background:#1c1c1c;border-radius:14px;font-size:58px;margin-bottom:12px}
+          .monchat-call-controls{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:16px}
+          .monchat-call-control{border:0;border-radius:999px;padding:12px 17px;background:#292929;color:#fff;cursor:pointer;font-size:14px}
+          .monchat-call-control:disabled{opacity:.4;cursor:not-allowed}
+          .monchat-call-control.accept{background:#16834a}.monchat-call-control.hangup{background:#c83232}
+          @media(max-width:520px){.monchat-call-videos{grid-template-columns:1fr}.monchat-call-videos video{aspect-ratio:16/9}.monchat-call-panel{padding:14px}}
+        `;
+        document.head.appendChild(style);
+
+        const actions = document.createElement("div");
+        actions.className = "monchat-call-actions";
+        actions.innerHTML = `
+          <button type="button" class="monchat-call-button" id="startAudioCall" title="Appel audio" aria-label="Appel audio">📞</button>
+          <button type="button" class="monchat-call-button" id="startVideoCall" title="Appel vidéo" aria-label="Appel vidéo">📹</button>`;
+        const menu = header.querySelector(".menu-button");
+        if (menu) header.insertBefore(actions, menu);
+        else header.appendChild(actions);
+
+        const overlay = document.createElement("div");
+        overlay.id = "monchatCallOverlay";
+        overlay.className = "monchat-call-overlay";
+        overlay.style.display = "none";
+        overlay.innerHTML = `
+          <section class="monchat-call-panel" role="dialog" aria-modal="true" aria-labelledby="monchatCallTitle">
+            <div class="monchat-call-top">
+              <div>
+                <div class="monchat-call-title" id="monchatCallTitle">Appel MonChat</div>
+                <div class="monchat-call-status" id="monchatCallStatus">En attente…</div>
+              </div>
+              <button type="button" class="monchat-call-button" id="closeCallPanel" aria-label="Fermer">✕</button>
+            </div>
+            <div class="monchat-call-avatar" id="monchatCallAvatar">👤</div>
+            <div class="monchat-call-videos" id="monchatCallVideos">
+              <video id="monchatLocalVideo" autoplay playsinline muted></video>
+              <video id="monchatRemoteVideo" autoplay playsinline></video>
+            </div>
+            <div class="monchat-call-controls" id="monchatCallControls">
+              <button type="button" class="monchat-call-control accept" id="acceptCallButton">Accepter</button>
+              <button type="button" class="monchat-call-control hangup" id="declineCallButton">Refuser</button>
+              <button type="button" class="monchat-call-control" id="toggleMicButton" hidden>🎙️ Micro</button>
+              <button type="button" class="monchat-call-control" id="toggleCameraButton" hidden>📷 Caméra</button>
+              <button type="button" class="monchat-call-control hangup" id="hangupCallButton" hidden>Raccrocher</button>
+            </div>
+          </section>`;
+        document.body.appendChild(overlay);
+
+        $("startAudioCall").addEventListener("click", () => beginOutgoingCall("audio"));
+        $("startVideoCall").addEventListener("click", () => beginOutgoingCall("video"));
+        $("acceptCallButton").addEventListener("click", acceptIncomingCall);
+        $("declineCallButton").addEventListener("click", () => finishCall(true, "Appel refusé."));
+        $("hangupCallButton").addEventListener("click", () => finishCall(true, "Appel terminé."));
+        $("closeCallPanel").addEventListener("click", () => {
+            if (callState.status !== "idle") finishCall(true, "Appel terminé.");
+            else hideCallPanel();
+        });
+        $("toggleMicButton").addEventListener("click", toggleCallMicrophone);
+        $("toggleCameraButton").addEventListener("click", toggleCallCamera);
+        callUIReady = true;
+    }
+
+    const enabled = Boolean(currentUser && selectedUser && selectedUser.id !== currentUser.id && callState.status === "idle");
+    $("startAudioCall").disabled = !enabled;
+    $("startVideoCall").disabled = !enabled;
+}
+
+function showCallPanel(title, status, mode = "audio") {
+    setupCallUI();
+    $("monchatCallOverlay").style.display = "flex";
+    $("monchatCallTitle").textContent = title;
+    $("monchatCallStatus").textContent = status;
+    $("monchatCallVideos").style.display = mode === "video" ? "grid" : "none";
+    $("monchatCallAvatar").style.display = mode === "video" ? "none" : "flex";
+    $("acceptCallButton").hidden = callState.status !== "incoming";
+    $("declineCallButton").hidden = !["incoming", "outgoing"].includes(callState.status);
+    $("hangupCallButton").hidden = !["connecting", "active"].includes(callState.status);
+    $("toggleMicButton").hidden = !["connecting", "active"].includes(callState.status);
+    $("toggleCameraButton").hidden = mode !== "video" || !["connecting", "active"].includes(callState.status);
+    setupCallUI();
+}
+
+function hideCallPanel() {
+    const overlay = $("monchatCallOverlay");
+    if (overlay) overlay.style.display = "none";
+}
+
+function refreshCallButtons() {
+    if ($("startAudioCall")) {
+        const enabled = Boolean(currentUser && selectedUser && callState.status === "idle");
+        $("startAudioCall").disabled = !enabled;
+        $("startVideoCall").disabled = !enabled;
+    }
+}
+
+async function setupCallSignaling() {
+    if (!currentUser || !window.supabase) return;
+    if (callSignalChannel) {
+        await supabaseClient.removeChannel(callSignalChannel);
+        callSignalChannel = null;
+    }
+
+    const myId = currentUser.id;
+    callSignalChannel = supabaseClient
+        .channel(`monchat-call-signals-${myId}`)
+        .on("postgres_changes", {
+            event: "INSERT",
+            schema: "public",
+            table: "call_signals",
+            filter: `receiver_id=eq.${myId}`
+        }, async (payload) => {
+            if (currentUser?.id !== myId) return;
+            await handleCallSignal(payload.new);
+        })
+        .subscribe((status) => {
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+                console.error("[MonChat] Signalisation des appels :", status);
+            }
+        });
+}
+
+async function sendCallSignal(receiverId, callId, type, data = {}) {
+    if (!currentUser || !receiverId) throw new Error("Utilisateur non connecté.");
+    const { error } = await supabaseClient.from("call_signals").insert({
+        call_id: callId,
+        sender_id: currentUser.id,
+        receiver_id: receiverId,
+        type,
+        payload: data
+    });
+    if (error) throw error;
+}
+
+async function beginOutgoingCall(type) {
+    if (!currentUser || !selectedUser || callState.status !== "idle") return;
+    const peer = { id: selectedUser.id, username: selectedUser.username };
+    callState = {
+        status: "outgoing",
+        callId: crypto.randomUUID(),
+        peer,
+        type,
+        pc: null,
+        localStream: null,
+        remoteStream: null,
+        pendingIce: [],
+        micEnabled: true,
+        cameraEnabled: true
+    };
+    refreshCallButtons();
+    showCallPanel(`Appel ${type === "video" ? "vidéo" : "audio"} vers ${peer.username}`,
+        "Appel en cours…", type);
+    try {
+        await sendCallSignal(peer.id, callState.callId, "invite", {
+            callType: type,
+            callerName: currentProfile?.username || "Utilisateur"
+        });
+        $("monchatCallStatus").textContent = `Appel envoyé à ${peer.username}…`;
+    } catch (error) {
+        alert("Impossible de lancer l'appel. Vérifie la configuration SQL des appels dans Supabase.");
+        console.error("[MonChat] Appel sortant :", error);
+        await finishCall(false);
+    }
+}
+
+async function handleCallSignal(signal) {
+    if (!signal || !currentUser || signal.sender_id === currentUser.id) return;
+
+    const activeId = callState.callId;
+    if (signal.type === "invite") {
+        if (callState.status !== "idle") {
+            try {
+                await sendCallSignal(signal.sender_id, signal.call_id, "busy", {});
+            } catch (error) { console.warn(error); }
+            return;
+        }
+        const { data: profile } = await supabaseClient
+            .from("profiles").select("id, username").eq("id", signal.sender_id).maybeSingle();
+        callState = {
+            status: "incoming",
+            callId: signal.call_id,
+            peer: { id: signal.sender_id, username: profile?.username || signal.payload?.callerName || "Utilisateur" },
+            type: signal.payload?.callType === "video" ? "video" : "audio",
+            pc: null, localStream: null, remoteStream: null, pendingIce: [],
+            micEnabled: true, cameraEnabled: true
+        };
+        refreshCallButtons();
+        showCallPanel(`Appel entrant de ${callState.peer.username}`,
+            `${callState.type === "video" ? "Appel vidéo" : "Appel audio"} entrant`, callState.type);
+        return;
+    }
+
+    if (!activeId || signal.call_id !== activeId || !callState.peer || signal.sender_id !== callState.peer.id) return;
+
+    try {
+        if (signal.type === "accept" && callState.status === "outgoing") {
+            callState.status = "connecting";
+            await prepareLocalMedia();
+            createCallPeerConnection();
+            const offer = await callState.pc.createOffer();
+            await callState.pc.setLocalDescription(offer);
+            await sendCallSignal(callState.peer.id, callState.callId, "offer", { description: callState.pc.localDescription });
+            showCallPanel(`Appel avec ${callState.peer.username}`, "Connexion…", callState.type);
+        } else if (signal.type === "reject" || signal.type === "busy") {
+            const peerName = callState.peer?.username || "L'utilisateur";
+            await finishCall(false);
+            alert(signal.type === "busy" ? `${peerName} est déjà en appel.` : "L'appel a été refusé.");
+        } else if (signal.type === "offer" && callState.status === "connecting" && callState.pc) {
+            await callState.pc.setRemoteDescription(new RTCSessionDescription(signal.payload.description));
+            for (const candidate of callState.pendingIce.splice(0)) {
+                await callState.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            const answer = await callState.pc.createAnswer();
+            await callState.pc.setLocalDescription(answer);
+            await sendCallSignal(callState.peer.id, callState.callId, "answer", { description: callState.pc.localDescription });
+        } else if (signal.type === "answer" && callState.pc) {
+            await callState.pc.setRemoteDescription(new RTCSessionDescription(signal.payload.description));
+            for (const candidate of callState.pendingIce.splice(0)) {
+                await callState.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        } else if (signal.type === "ice" && callState.pc && signal.payload?.candidate) {
+            if (callState.pc.remoteDescription) {
+                await callState.pc.addIceCandidate(new RTCIceCandidate(signal.payload.candidate));
+            } else {
+                callState.pendingIce.push(signal.payload.candidate);
+            }
+        } else if (signal.type === "end") {
+            await finishCall(false);
+        }
+    } catch (error) {
+        console.error("[MonChat] Erreur de connexion WebRTC :", error);
+        alert("La connexion d'appel a échoué. Vérifie les autorisations du micro/caméra et la configuration TURN si nécessaire.");
+        await finishCall(true, "Connexion échouée.");
+    }
+}
+
+async function acceptIncomingCall() {
+    if (callState.status !== "incoming" || !callState.peer) return;
+    try {
+        callState.status = "connecting";
+        await prepareLocalMedia();
+        createCallPeerConnection();
+        showCallPanel(`Appel avec ${callState.peer.username}`, "Connexion…", callState.type);
+        await sendCallSignal(callState.peer.id, callState.callId, "accept", {});
+    } catch (error) {
+        console.error("[MonChat] Autorisation média :", error);
+        alert("Impossible d'accéder au micro ou à la caméra. Autorise l'accès dans ton navigateur puis réessaie.");
+        await finishCall(true, "Accès au micro/caméra impossible.");
+    }
+}
+
+async function prepareLocalMedia() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Les appels nécessitent HTTPS ou localhost et un navigateur compatible.");
+    }
+    callState.localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: callState.type === "video"
+    });
+    const localVideo = $("monchatLocalVideo");
+    localVideo.srcObject = callState.localStream;
+}
+
+function createCallPeerConnection() {
+    const pc = new RTCPeerConnection({
+        iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+        ]
+    });
+    callState.pc = pc;
+    callState.remoteStream = new MediaStream();
+
+    callState.localStream.getTracks().forEach(track => pc.addTrack(track, callState.localStream));
+    $("monchatRemoteVideo").srcObject = callState.remoteStream;
+
+    pc.ontrack = (event) => {
+        event.streams[0]?.getTracks().forEach(track => callState.remoteStream.addTrack(track));
+        $("monchatRemoteVideo").srcObject = callState.remoteStream;
+        $("monchatCallStatus").textContent = "Appel connecté";
+        callState.status = "active";
+        showCallPanel(`Appel avec ${callState.peer.username}`, "Appel connecté", callState.type);
+    };
+
+    pc.onicecandidate = async (event) => {
+        if (!event.candidate || !callState.peer || !callState.callId) return;
+        try {
+            await sendCallSignal(callState.peer.id, callState.callId, "ice", {
+                candidate: event.candidate.toJSON()
+            });
+        } catch (error) {
+            console.warn("[MonChat] Impossible d'envoyer ICE :", error);
+        }
+    };
+
+    pc.onconnectionstatechange = () => {
+        if (["failed", "disconnected"].includes(pc.connectionState)) {
+            $("monchatCallStatus").textContent = "Connexion interrompue…";
+        }
+    };
+}
+
+async function toggleCallMicrophone() {
+    const track = callState.localStream?.getAudioTracks()[0];
+    if (!track) return;
+    callState.micEnabled = !track.enabled;
+    track.enabled = callState.micEnabled;
+    $("toggleMicButton").textContent = callState.micEnabled ? "🎙️ Micro" : "🔇 Micro coupé";
+}
+
+async function toggleCallCamera() {
+    const track = callState.localStream?.getVideoTracks()[0];
+    if (!track) return;
+    callState.cameraEnabled = !track.enabled;
+    track.enabled = callState.cameraEnabled;
+    $("toggleCameraButton").textContent = callState.cameraEnabled ? "📷 Caméra" : "🚫 Caméra coupée";
+}
+
+async function finishCall(notifyPeer = false, message = "") {
+    const previous = callState;
+    callState = {
+        status: "idle", callId: null, peer: null, type: "audio",
+        pc: null, localStream: null, remoteStream: null, pendingIce: [],
+        micEnabled: true, cameraEnabled: true
+    };
+
+    if (notifyPeer && previous.peer && previous.callId && currentUser) {
+        const signalType = previous.status === "incoming" ? "reject" : "end";
+        try {
+            await sendCallSignal(previous.peer.id, previous.callId, signalType, {});
+        } catch (error) { console.warn("[MonChat] Fin d'appel :", error); }
+    }
+    try { previous.pc?.close(); } catch (_) {}
+    previous.localStream?.getTracks().forEach(track => track.stop());
+    if ($("monchatLocalVideo")) $("monchatLocalVideo").srcObject = null;
+    if ($("monchatRemoteVideo")) $("monchatRemoteVideo").srcObject = null;
+    hideCallPanel();
+    refreshCallButtons();
+    if (message) $("chatStatus").textContent = message;
+}
+
 
 /* =========================================
    DÉMARRAGE
